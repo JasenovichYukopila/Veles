@@ -1,0 +1,8 @@
+,Modelo,Accuracy,Macro F1
+1,SVM_RBF,0.7164,0.6943
+2,Voting_Linear_GB_RF,0.7214,0.6935
+3,SVM_Linear,0.7164,0.691
+4,Gradient_Boosting,0.7015,0.6814
+5,Random_Forest,0.6667,0.6428
+6,LinearSVC,0.6667,0.6365
+7,SVM_Poly,0.607,0.612
