@@ -1,81 +1,33 @@
-# Veles
+# Veles 🎶
 
-## Proyecto de clasificación musical
+[![Python Version](https://img.shields.io/badge/python-3.14+-blue.svg)](https://www.python.org/)
+[![Librosa](https://img.shields.io/badge/librosa-0.10.x-orange.svg)](https://librosa.org/)
+[![Pandas](https://img.shields.io/badge/pandas-2.x-purple.svg)](https://pandas.pydata.org/)
 
-Hasta ahora este proyecto abarca únicamente la fase de ETL. El objetivo final es una solución de identificación de géneros musicales similar a un Shazam, pero por el momento solo se ha completado la etapa de extracción y transformación de datos.
+**Veles** es un motor de ingeniería de características y clasificación inteligente de géneros musicales. El proyecto implementa un pipeline de procesamiento digital de señales (DSP) optimizado para transformar archivos de audio crudos (`.mp3` y `.wav`) en matrices de datos estructuradas de alta densidad mediante técnicas de segmentación por ventanas deslizantes y aprendizaje estadístico.
 
-## Fase actual: ETL realizado
+### 1. Extracción y Segmentación Dinámica (ETL v3)
+Para contrarrestar la escasez de datos típica en tareas de audio, implementamos un enfoque de **Ventanas Deslizantes (Sliding Windows)** secuenciales que multiplica exponencialmente el volumen de registros explotables:
+* **Duración de Ventana:** 15 segundos por segmento.
+* **Solapamiento (Overlap):** 1 segundo entre ventanas consecutivas (paso efectivo de 14 segundos).
+* **Control de Sesgo por Duración:** Dado que géneros como la música clásica o el jazz tienen pistas nativamente más largas que el pop o hip-hop, el script impone un **tope máximo de 15 segmentos aleatorios por canción** (`MAX_SEGMENTOS_POR_CANCION = 15`), garantizando un dataset balanceado desde la raíz y previniendo el sobreajuste (*overfitting*).
 
-El proceso de ETL se implementa en el notebook `Data/ETL.ipynb` y consta de las siguientes etapas:
+### 2. Matriz de Características Extráidas (40 Columnas)
+Por cada ventana de 15 segundos extraída, el motor calcula un vector de **37 características físicas de audio** combinadas con 3 variables de metadatos:
 
-### 1. Importación de librerías
-- `import librosa`: Librería especializada en análisis de audio y música para cargar archivos de sonido y extraer características acústicas.
-- `import numpy as np`: Proporciona estructuras de datos tipo array y operaciones matemáticas vectorizadas.
-- `import pandas as pd`: Para manipulación y análisis de datos tabulares, usado para crear el DataFrame final.
-- `import os`: Para interactuar con el sistema de archivos, recorrer carpetas y listar archivos.
-- `import warnings`: Para suprimir advertencias innecesarias.
-- `from tqdm import tqdm`: Para mostrar barras de progreso durante el procesamiento.
+| Tipo de Feature | Características Calculadas | Descripción |
+| :--- | :--- | :--- |
+| **Temporales & Ritmo** | `tempo` | Estimación de Beats Per Minute (BPM). |
+| **Energía & Amplitud** | `rms` | Valor cuadrático medio de la señal (potencia acústica). |
+| **Espectrales** | `spectral_centroid`, `spectral_bandwidth`, `rolloff` | Centro de masa, dispersión y frecuencia de corte del espectro. |
+| **Frecuenciales** | `zero_crossing_rate`, `spectral_flux_std` | Tasa de cambio de signo e irregularidad del flujo espectral. |
+| **Tímbricas** | `mfcc1_mean` a `mfcc13_mean` y `mfcc1_std` a `mfcc13_std` | 13 Coeficientes Cestrales en las Frecuencias de Mel (Medias y Desviaciones). |
+| **Armónicas / Tonalidad** | `chroma_stft`, `pitch_variance` | Distribución de la energía en las doce semitonas de la escala musical. |
+| **Rítmicas Avanzadas** | `onset_strength_mean`, `onset_strength_std` | Fuerza y consistencia de los inicios de nota. |
+| **Metadatos** | `label`, `song_id`, `segment_type` | Identificadores estructurales y de supervisión. |
 
-### 2. Función `extraerfeatures(y, sr)`
-Esta función extrae características acústicas de un segmento de audio:
-- Calcula 13 coeficientes MFCC (Mel-Frequency Cepstral Coefficients) para representar el timbre.
-- Obtiene el onset strength (fuerza de los golpes rítmicos).
-- Calcula el chroma STFT (representación armónica en 12 notas musicales).
-- Extrae características globales:
-  - `tempo`: BPM de la canción.
-  - `spectral_centroid`: Centro de gravedad del espectro de frecuencias.
-  - `spectral_bandwidth`: Dispersión de frecuencias alrededor del centroid.
-  - `rolloff`: Frecuencia por debajo de la cual está el 85% de la energía.
-  - `zero_crossing_rate`: Tasa de cruces por cero (indica percusión).
-  - `rms`: Energía promedio (volumen).
-  - `chroma_stft`: Promedio del chroma (armonía).
-  - `onset_strength_mean` y `std`: Media y desviación estándar de la fuerza rítmica.
-  - `pitch_variance`: Varianza del chroma (estabilidad armónica).
-  - `spectral_flux_std`: Desviación estándar del onset strength.
-- Para cada MFCC, calcula media y desviación estándar.
-- Retorna un diccionario con todas las características.
+---
 
-### 3. Configuración inicial
-- Inicializa una lista `filas` para almacenar los datos.
-- Define `carpeta_raiz = 'data/raw/songs'` como la ruta a los archivos de audio.
-- Inicializa contadores de estadísticas: procesados, errores de lectura, canciones muy cortas.
-- Lista los géneros como directorios en la carpeta raíz.
+### 3. Próxima Fase: Entrenamiento de Modelos Predictivos
 
-### 4. Bucle principal de procesamiento
-Para cada género:
-- Lista los archivos de audio (.mp3, .wav) en la carpeta del género.
-- Para cada archivo:
-  - Carga el audio con `librosa.load` y obtiene duración.
-  - Aplica lógica de segmentación dinámica:
-    - Si duración >= 85s: 3 segmentos (inicio, mitad, final).
-    - Si >= 60s: 2 segmentos (inicio, final).
-    - Si >= 30s: 1 segmento (único).
-    - Si < 30s: salta la canción.
-  - Para cada segmento:
-    - Extrae el segmento de 30 segundos.
-    - Verifica que tenga al menos 29 segundos para margen de seguridad.
-    - Llama a `extraerfeatures` para obtener características.
-    - Agrega columnas: `label` (género), `song_id` (archivo), `segment_type` (tipo de segmento).
-    - Agrega el diccionario a `filas`.
-  - Actualiza estadísticas.
-
-### 5. Creación del DataFrame
-- Crea un DataFrame de Pandas con la lista `filas`.
-- Exporta a CSV: `dataset_musical_7_generos.csv`.
-
-### 6. Reporte final
-- Imprime estadísticas: canciones procesadas, saltadas, errores.
-- Muestra distribución por género con `value_counts()`.
-
-Este proceso genera un dataset estructurado listo para modelado, con características acústicas por segmento de audio.
-
-## Estructura de carpetas
-
-- `Data/ETL.ipynb` - notebook de extracción y procesamiento de audio.
-- `Data/data/raw/songs/` - audio por género.
-
-## Observación
-
-El notebook fue actualizado para usar la ruta correcta de los archivos de audio: `data/raw/songs`.
-
-Esta documentación refleja la fase realizada hasta ahora: extracción y preparación de datos. El proyecto todavía no ha avanzado a las etapas de modelado o despliegue de un sistema de identificación de géneros musicales.
+Con el dataset balanceado exportado exitosamente en `data/dataset_15s_overlap.csv`, la siguiente etapa comprende el modelado bajo una arquitectura de clasificador por votación blanda (**Soft Voting Classifier**):
