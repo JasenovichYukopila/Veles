@@ -1,33 +1,120 @@
-# Veles 🎶
+# Veles
 
-[![Python Version](https://img.shields.io/badge/python-3.14+-blue.svg)](https://www.python.org/)
-[![Librosa](https://img.shields.io/badge/librosa-0.10.x-orange.svg)](https://librosa.org/)
-[![Pandas](https://img.shields.io/badge/pandas-2.x-purple.svg)](https://pandas.pydata.org/)
-
-**Veles** es un motor de ingeniería de características y clasificación inteligente de géneros musicales. El proyecto implementa un pipeline de procesamiento digital de señales (DSP) optimizado para transformar archivos de audio crudos (`.mp3` y `.wav`) en matrices de datos estructuradas de alta densidad mediante técnicas de segmentación por ventanas deslizantes y aprendizaje estadístico.
-
-### 1. Extracción y Segmentación Dinámica (ETL v3)
-Para contrarrestar la escasez de datos típica en tareas de audio, implementamos un enfoque de **Ventanas Deslizantes (Sliding Windows)** secuenciales que multiplica exponencialmente el volumen de registros explotables:
-* **Duración de Ventana:** 15 segundos por segmento.
-* **Solapamiento (Overlap):** 1 segundo entre ventanas consecutivas (paso efectivo de 14 segundos).
-* **Control de Sesgo por Duración:** Dado que géneros como la música clásica o el jazz tienen pistas nativamente más largas que el pop o hip-hop, el script impone un **tope máximo de 15 segmentos aleatorios por canción** (`MAX_SEGMENTOS_POR_CANCION = 15`), garantizando un dataset balanceado desde la raíz y previniendo el sobreajuste (*overfitting*).
-
-### 2. Matriz de Características Extráidas (40 Columnas)
-Por cada ventana de 15 segundos extraída, el motor calcula un vector de **37 características físicas de audio** combinadas con 3 variables de metadatos:
-
-| Tipo de Feature | Características Calculadas | Descripción |
-| :--- | :--- | :--- |
-| **Temporales & Ritmo** | `tempo` | Estimación de Beats Per Minute (BPM). |
-| **Energía & Amplitud** | `rms` | Valor cuadrático medio de la señal (potencia acústica). |
-| **Espectrales** | `spectral_centroid`, `spectral_bandwidth`, `rolloff` | Centro de masa, dispersión y frecuencia de corte del espectro. |
-| **Frecuenciales** | `zero_crossing_rate`, `spectral_flux_std` | Tasa de cambio de signo e irregularidad del flujo espectral. |
-| **Tímbricas** | `mfcc1_mean` a `mfcc13_mean` y `mfcc1_std` a `mfcc13_std` | 13 Coeficientes Cestrales en las Frecuencias de Mel (Medias y Desviaciones). |
-| **Armónicas / Tonalidad** | `chroma_stft`, `pitch_variance` | Distribución de la energía en las doce semitonas de la escala musical. |
-| **Rítmicas Avanzadas** | `onset_strength_mean`, `onset_strength_std` | Fuerza y consistencia de los inicios de nota. |
-| **Metadatos** | `label`, `song_id`, `segment_type` | Identificadores estructurales y de supervisión. |
+Motor de clasificación de géneros musicales basado en **ingeniería de características acústicas** (librosa) y **datos comerciales de Spotify** (spotipy). Combina un pipeline de audio DSP con aprendizaje automático para predecir géneros musicales y analizar su rendimiento comercial.
 
 ---
 
-### 3. Próxima Fase: Entrenamiento de Modelos Predictivos
+## Estructura del Proyecto
 
-Con el dataset balanceado exportado exitosamente en `data/dataset_15s_overlap.csv`, la siguiente etapa comprende el modelado bajo una arquitectura de clasificador por votación blanda (**Soft Voting Classifier**):
+```
+Veles/
+├── .env.example                  # Template para credenciales de Spotify
+├── .gitignore
+├── .python-version               # Python 3.14
+├── pyproject.toml                # Dependencias del proyecto
+├── uv.lock                       # Lock file generado por uv
+├── README.md
+│
+├── notebooks/                    # Notebooks ejecutables en orden
+│   ├── 01_audio_feature_extraction.ipynb   # ETL de audio (librosa)
+│   ├── 02_spotify_etl.ipynb                # ETL de API de Spotify
+│   └── 03_model_training.ipynb             # Entrenamiento y evaluación
+│
+├── src/                          # Código fuente reutilizable
+│   ├── __init__.py
+│   └── features/
+│       └── __init__.py
+│
+├── data/                         # Datos del proyecto
+│   ├── raw/                      # Audio fuente (no versionado)
+│   ├── processed/                # Datasets generados
+│   │   ├── audio_features_15s.csv            # 4785 segmentos (15s, sliding window)
+│   │   ├── audio_features_v1_30s.csv         # 980 segmentos (30s, inicio/medio/fin)
+│   │   ├── spotify_business_metrics.csv      # Métricas agregadas por género
+│   │   └── spotify_b2c_recommendations.csv   # Top artistas y canciones por género
+│   ├── models/                   # Artefactos de evaluación
+│   │   └── model_ranking.csv                 # Ranking de 7 modelos ML
+│   └── external/                 # Caches de API (no versionado)
+│
+├── reports/                      # Reportes y visualizaciones
+│   └── figures/                  # Matrices de confusión de modelos
+│
+├── config/                       # Archivos de configuración
+│   └── genres.yaml               # Lista de géneros musicales
+│
+├── api/                          # Futuro: backend (FastAPI)
+│   └── .gitkeep
+│
+└── frontend/                     # Futuro: frontend (Streamlit / React)
+    └── .gitkeep
+```
+
+---
+
+## Flujo de Trabajo
+
+### 1. Extracción de Características de Audio (`notebooks/01_audio_feature_extraction.ipynb`)
+
+Convierte archivos de audio (`.mp3`/`.wav`) organizados por género en datasets estructurados.
+
+- **Entrada:** Audio en `data/raw/{genero}/` (requiere FFmpeg)
+- **Procesamiento:** Ventanas deslizantes de 15s con 1s de solapamiento
+- **Características extraídas (40+):** tempo, MFCCs, spectral centroid, chroma, zero-crossing rate, rolloff, etc.
+- **Salida:** `data/processed/audio_features_15s.csv` (~4785 segmentos balanceados)
+
+### 2. ETL Spotify (`notebooks/02_spotify_etl.ipynb`)
+
+Extrae datos comerciales desde la API de Spotify para alimentar dashboards de BI y B2C.
+
+- **Autenticación:** Client Credentials (configurar en celdas del notebook)
+- **Géneros consultados:** pop, rock, jazz, hip-hop, classical, electronic, reggaeton
+- **Datos extraídos:** Top 10 artistas por género + Top 3 pistas por artista
+- **Datos sintéticos:** Edad, género y potencial de ganancia generados con ruido gaussiano
+- **Salida:** `data/processed/spotify_business_metrics.csv` y `spotify_b2c_recommendations.csv`
+
+### 3. Entrenamiento de Modelos (`notebooks/03_model_training.ipynb`)
+
+Entrena y evalúa 7 clasificadores para predicción de género musical.
+
+- **Modelos:** SVM (RBF/Linear/Poly), Random Forest, Gradient Boosting, LinearSVC, Voting Classifier
+- **Validación:** GroupShuffleSplit (80/20) para evitar data leakage por canción
+- **Mejor modelo:** Voting Classifier (Linear SVM + GB + RF) con ~69% accuracy y Macro F1
+- **Salida:** Matrices de confusión en `reports/figures/`
+
+---
+
+## Requisitos
+
+- Python 3.14+
+- [uv](https://docs.astral.sh/uv/) (gestor de paquetes)
+- FFmpeg (para decodificación de MP3)
+
+Instalación:
+
+```bash
+uv sync
+```
+
+Para ejecutar los notebooks:
+
+```bash
+uv run jupyter notebook notebooks/
+```
+
+---
+
+## Spotify API
+
+Para usar el notebook `02_spotify_etl.ipynb` necesitás credenciales de Spotify:
+
+1. Crear app en https://developer.spotify.com/dashboard
+2. Copiar Client ID y Client Secret
+3. Pegarlos en las constantes `CLIENT_ID` y `CLIENT_SECRET` del notebook
+
+> ⚠️ Las credenciales quedan escritas en el notebook. Para compartir el proyecto, usar un archivo `.env` y cargarlo con `python-dotenv`.
+
+---
+
+## Licencia
+
+Uso académico e investigativo.

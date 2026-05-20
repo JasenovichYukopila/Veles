@@ -1,3 +1,21 @@
+# Audio raw files (not tracked)
 *.zip
 *.mp3
+*.wav
+*.flac
+*.ogg
+
+# Virtual environment
 .venv/
+
+# API caches and credentials
+data/external/
+.env
+
+# Model artifacts
+*.pkl
+*.joblib
+
+# OS artifacts
+.DS_Store
+Thumbs.db
