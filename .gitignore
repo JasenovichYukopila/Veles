@@ -10,6 +10,7 @@
 
 # API caches and credentials
 data/external/
+.cache/
 .env
 
 # Model artifacts

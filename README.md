@@ -20,66 +20,110 @@ Veles/
 │   ├── 02_spotify_etl.ipynb                # ETL de API de Spotify
 │   └── 03_model_training.ipynb             # Entrenamiento y evaluación
 │
-├── src/                          # Código fuente reutilizable
-│   ├── __init__.py
-│   └── features/
-│       └── __init__.py
-│
 ├── data/                         # Datos del proyecto
 │   ├── raw/                      # Audio fuente (no versionado)
-│   ├── processed/                # Datasets generados
-│   │   ├── audio_features_15s.csv            # 4785 segmentos (15s, sliding window)
-│   │   ├── audio_features_v1_30s.csv         # 980 segmentos (30s, inicio/medio/fin)
-│   │   ├── spotify_business_metrics.csv      # Métricas agregadas por género
-│   │   └── spotify_b2c_recommendations.csv   # Top artistas y canciones por género
-│   ├── models/                   # Artefactos de evaluación
-│   │   └── model_ranking.csv                 # Ranking de 7 modelos ML
-│   └── external/                 # Caches de API (no versionado)
+│   ├── songs/                    # Datasets de features de audio
+│   │   ├── audio_features_15s.csv
+│   │   └── audio_features_v1_30s.csv
+│   └── spotify/                  # Datasets extraídos de Spotify API
+│       ├── spotify_business_metrics.csv
+│       └── spotify_b2c_recommendations.csv
 │
-├── reports/                      # Reportes y visualizaciones
-│   └── figures/                  # Matrices de confusión de modelos
-│
-├── config/                       # Archivos de configuración
-│   └── genres.yaml               # Lista de géneros musicales
-│
-├── api/                          # Futuro: backend (FastAPI)
-│   └── .gitkeep
-│
-└── frontend/                     # Futuro: frontend (Streamlit / React)
-    └── .gitkeep
+└── reports/                      # Reportes y visualizaciones
+    └── figures/
+        └── figures1/             # Matrices de confusión de modelos
+            ├── confusion_matrix_Gradient_Boosting.png
+            ├── confusion_matrix_LinearSVC.png
+            ├── confusion_matrix_Random_Forest.png
+            ├── confusion_matrix_SVM_Linear.png
+            ├── confusion_matrix_SVM_Poly.png
+            ├── confusion_matrix_SVM_RBF.png
+            └── confusion_matrix_Voting_Linear_GB_RF.png
 ```
 
 ---
 
 ## Flujo de Trabajo
 
-### 1. Extracción de Características de Audio (`notebooks/01_audio_feature_extraction.ipynb`)
+### 1. Extracción de Características de Audio (`01_audio_feature_extraction.ipynb`)
 
 Convierte archivos de audio (`.mp3`/`.wav`) organizados por género en datasets estructurados.
 
 - **Entrada:** Audio en `data/raw/{genero}/` (requiere FFmpeg)
 - **Procesamiento:** Ventanas deslizantes de 15s con 1s de solapamiento
 - **Características extraídas (40+):** tempo, MFCCs, spectral centroid, chroma, zero-crossing rate, rolloff, etc.
-- **Salida:** `data/processed/audio_features_15s.csv` (~4785 segmentos balanceados)
+- **Salida:** `data/songs/audio_features_*s.csv`
 
-### 2. ETL Spotify (`notebooks/02_spotify_etl.ipynb`)
+### 2. ETL Spotify (`02_spotify_etl.ipynb`)
 
 Extrae datos comerciales desde la API de Spotify para alimentar dashboards de BI y B2C.
 
-- **Autenticación:** Client Credentials (configurar en celdas del notebook)
-- **Géneros consultados:** pop, rock, jazz, hip-hop, classical, electronic, reggaeton
+- **Autenticación:** Client Credentials vía `.env` (variables `SPOTIPY_CLIENT_ID` y `SPOTIPY_CLIENT_SECRET`)
+- **Géneros consultados:** vallenato, jazz, clasica, pop, rock, electronica, hiphop
 - **Datos extraídos:** Top 10 artistas por género + Top 3 pistas por artista
-- **Datos sintéticos:** Edad, género y potencial de ganancia generados con ruido gaussiano
-- **Salida:** `data/processed/spotify_business_metrics.csv` y `spotify_b2c_recommendations.csv`
+- **KPIs por género:** popularidad promedio/max/min, seguidores totales/promedio, duración promedio, % explícitos, diversidad de sub-géneros, % con preview
+- **Datos sintéticos:** Edad promedio, % hombres/mujeres y ganancia potencial generados con ruido gaussiano
+- **Salida:**
+  - `data/spotify/spotify_business_metrics.csv` — 1 fila por género, 17 columnas
+  - `data/spotify/spotify_b2c_recommendations.csv` — 1 fila por canción, archivo plano
 
-### 3. Entrenamiento de Modelos (`notebooks/03_model_training.ipynb`)
+### 3. Entrenamiento de Modelos (`03_model_training.ipynb`)
 
 Entrena y evalúa 7 clasificadores para predicción de género musical.
 
 - **Modelos:** SVM (RBF/Linear/Poly), Random Forest, Gradient Boosting, LinearSVC, Voting Classifier
 - **Validación:** GroupShuffleSplit (80/20) para evitar data leakage por canción
 - **Mejor modelo:** Voting Classifier (Linear SVM + GB + RF) con ~69% accuracy y Macro F1
-- **Salida:** Matrices de confusión en `reports/figures/`
+- **Salida:** Matrices de confusión en `reports/figures/figures1/`
+
+---
+
+## Datasets Generados
+
+### `data/spotify/spotify_business_metrics.csv`
+
+Métricas agregadas por género musical (7 filas, 17 columnas).
+
+| Columna | Descripción |
+|---|---|
+| `genero` | Nombre del género musical |
+| `popularidad_promedio` | Popularidad promedio de los artistas (0–100) |
+| `seguidores_totales` | Suma de seguidores de todos los artistas del género |
+| `edad_promedio_oyente` | Edad promedio del oyente (dato sintético) |
+| `porcentaje_hombres` | % hombres oyentes (dato sintético) |
+| `porcentaje_mujeres` | % mujeres oyentes (dato sintético) |
+| `potencial_ganancia_usd` | Ganancia potencial estimada en USD (dato sintético) |
+| `duracion_promedio_ms` | Duración promedio de las canciones en milisegundos |
+| `porcentaje_explicitos` | % de canciones con contenido explícito |
+| `popularidad_max` | Popularidad máxima entre artistas del género |
+| `popularidad_min` | Popularidad mínima entre artistas del género |
+| `diversidad_generos_secundarios` | Cantidad de sub-géneros distintos encontrados |
+| `total_canciones_encontradas` | Total de canciones obtenidas para el género |
+| `porcentaje_con_preview` | % de canciones que tienen preview disponible |
+| `promedio_seguidores_por_artista` | Promedio de seguidores por artista |
+| `potencial_ganancia_usd_log` | Logaritmo natural de `potencial_ganancia_usd` |
+| `seguidores_totales_log` | Logaritmo natural de `seguidores_totales` |
+
+### `data/spotify/spotify_b2c_recommendations.csv`
+
+Catálogo plano de artistas y canciones por género para consumo B2C.
+
+| Columna | Descripción |
+|---|---|
+| `genero` | Nombre del género musical |
+| `artista_nombre` | Nombre del artista |
+| `artista_id` | ID de Spotify del artista |
+| `popularidad_artista` | Popularidad del artista (0–100) |
+| `seguidores_artista` | Seguidores del artista |
+| `imagen_artista` | URL de la imagen del artista |
+| `cancion_nombre` | Nombre de la canción |
+| `cancion_id` | ID de Spotify de la canción |
+| `popularidad_cancion` | Popularidad de la canción (0–100) |
+| `duracion_ms` | Duración de la canción en milisegundos |
+| `es_explicito` | Si la canción tiene contenido explícito |
+| `url_preview` | URL del preview de 30s (vacío si no disponible) |
+| `imagen_album` | URL de la imagen del álbum |
+| `generos_artista` | Lista de sub-géneros del artista |
 
 ---
 
@@ -89,15 +133,8 @@ Entrena y evalúa 7 clasificadores para predicción de género musical.
 - [uv](https://docs.astral.sh/uv/) (gestor de paquetes)
 - FFmpeg (para decodificación de MP3)
 
-Instalación:
-
 ```bash
 uv sync
-```
-
-Para ejecutar los notebooks:
-
-```bash
 uv run jupyter notebook notebooks/
 ```
 
@@ -105,13 +142,16 @@ uv run jupyter notebook notebooks/
 
 ## Spotify API
 
-Para usar el notebook `02_spotify_etl.ipynb` necesitás credenciales de Spotify:
-
 1. Crear app en https://developer.spotify.com/dashboard
 2. Copiar Client ID y Client Secret
-3. Pegarlos en las constantes `CLIENT_ID` y `CLIENT_SECRET` del notebook
+3. Crear `.env` desde `.env.example`:
 
-> ⚠️ Las credenciales quedan escritas en el notebook. Para compartir el proyecto, usar un archivo `.env` y cargarlo con `python-dotenv`.
+```
+SPOTIPY_CLIENT_ID="tu_client_id"
+SPOTIPY_CLIENT_SECRET="tu_client_secret"
+```
+
+El notebook carga las credenciales desde `.env` automáticamente con `python-dotenv`. **No se deben hardcodear credenciales en el notebook.**
 
 ---
 
