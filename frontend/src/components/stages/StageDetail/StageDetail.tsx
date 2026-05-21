@@ -6,9 +6,10 @@ import './StageDetail.css';
 interface StageDetailProps {
   result:  ClassificationResult;
   onReset: () => void;
+  onDashboard: () => void;
 }
 
-export function StageDetail({ result, onReset }: StageDetailProps) {
+export function StageDetail({ result, onReset, onDashboard }: StageDetailProps) {
   const { genre }         = result;
   const info              = GENRE_INFO[genre];
   const [activeTrack, setActiveTrack] = useState<TrackInfo | null>(null);
@@ -53,6 +54,9 @@ export function StageDetail({ result, onReset }: StageDetailProps) {
           </div>
         )}
 
+        <button className="stage-detail__dashboard" onClick={onDashboard}>
+          Ver Dashboard →
+        </button>
         <button className="stage-detail__reset" onClick={onReset}>
           ↩ Identificar otro género
         </button>

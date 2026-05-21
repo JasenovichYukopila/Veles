@@ -94,4 +94,5 @@ export const STAGE_LABELS: Record<string, string> = {
   processing: 'Analizando',
   result:     'Resultado',
   detail:     'Detalle',
+  dashboard:  'Dashboard',
 };

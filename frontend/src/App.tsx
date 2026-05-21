@@ -8,6 +8,7 @@ import { StageRecording }   from './components/stages/StageRecording/StageRecord
 import { StageProcessing }  from './components/stages/StageProcessing/StageProcessing';
 import { StageResult }      from './components/stages/StageResult/StageResult';
 import { StageDetail }      from './components/stages/StageDetail/StageDetail';
+import { StageDashboard }   from './components/stages/StageDashboard/StageDashboard';
 import './App.css';
 
 export default function App() {
@@ -59,12 +60,21 @@ export default function App() {
             result={result}
             onContinue={() => setStage('detail')}
             onReset={handleReset}
+            onDashboard={() => setStage('dashboard')}
           />
         ) : null;
       case 'detail':
         return result ? (
           <StageDetail
             result={result}
+            onReset={handleReset}
+            onDashboard={() => setStage('dashboard')}
+          />
+        ) : null;
+      case 'dashboard':
+        return result ? (
+          <StageDashboard
+            genre={result.genre}
             onReset={handleReset}
           />
         ) : null;

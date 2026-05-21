@@ -5,7 +5,7 @@ interface ProgressBarProps {
   currentStage: Stage;
 }
 
-const STAGES: Stage[] = ['idle', 'recording', 'processing', 'result', 'detail'];
+const STAGES: Stage[] = ['idle', 'recording', 'processing', 'result', 'detail', 'dashboard'];
 
 const STAGE_LABELS: Record<Stage, string> = {
   idle:       'Inicio',
@@ -13,6 +13,7 @@ const STAGE_LABELS: Record<Stage, string> = {
   processing: 'Analizando',
   result:     'Resultado',
   detail:     'Detalle',
+  dashboard:  'Dashboard',
 };
 
 export function ProgressBar({ currentStage }: ProgressBarProps) {

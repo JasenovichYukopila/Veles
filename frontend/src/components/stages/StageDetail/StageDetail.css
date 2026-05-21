@@ -130,6 +130,20 @@
     display: block;
   }
   
+  .stage-detail__dashboard {
+    align-self: flex-start;
+    font-size: 0.8rem;
+    color: var(--genre-color, var(--color-accent));
+    letter-spacing: 0.04em;
+    font-weight: 500;
+    transition: color var(--transition-fast);
+    padding: 0.5rem 0;
+  }
+  
+  .stage-detail__dashboard:hover {
+    color: var(--color-text-secondary);
+  }
+  
   .stage-detail__reset {
     align-self: flex-start;
     font-size: 0.8rem;

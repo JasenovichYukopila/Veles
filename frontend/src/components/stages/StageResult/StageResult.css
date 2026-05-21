@@ -138,3 +138,16 @@
   .stage-result__btn-secondary:hover {
     color: var(--color-text-secondary);
   }
+
+  .stage-result__btn-tertiary {
+    padding: 0.5rem 0;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    letter-spacing: 0.04em;
+    transition: color var(--transition-fast);
+    align-self: flex-start;
+  }
+
+  .stage-result__btn-tertiary:hover {
+    color: var(--color-text-secondary);
+  }
