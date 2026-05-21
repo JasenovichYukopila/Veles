@@ -9,7 +9,7 @@ export function StageIdle({ onStart }: StageIdleProps) {
     <section className="stage-idle">
       <div className="stage-idle__content">
         <div className="stage-idle__header">
-          <h1 className="stage-idle__title">SoundID</h1>
+          <h1 className="stage-idle__title">Veles</h1>
           <p className="stage-idle__subtitle">
             Identificación de géneros musicales
           </p>

@@ -155,7 +155,7 @@ El notebook carga las credenciales desde `.env` automáticamente con `python-dot
 
 ---
 
-## Aplicación Web — SoundID
+## Aplicación Web — Veles
 
 Interfaz interactiva para demostración del modelo en tiempo real. Permite grabar audio desde el micrófono y obtener la clasificación del género musical al instante.
 

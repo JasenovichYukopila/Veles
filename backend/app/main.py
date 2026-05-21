@@ -10,7 +10,7 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(
-    title='SoundID API',
+    title='Veles API',
     version='1.0.0',
     lifespan=lifespan,
 )
