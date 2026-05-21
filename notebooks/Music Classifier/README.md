@@ -276,7 +276,7 @@ gb_n_estimators: 93
 
 ### Matrices de Confusión
 
-Generadas para todos los modelos del Run 1, guardadas en `reports/figures/figures1/`:
+Generadas para todos los modelos del Run 1, guardadas en `reports/figures/1st_try/`:
 
 ```
 confusion_matrix_Voting_Linear_GB_RF.png

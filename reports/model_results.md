@@ -223,7 +223,7 @@ gb_n_estimators:    93
 
 ### Matriz de Confusión — Voting Classifier (Run 1)
 
-Las matrices de confusión para todos los modelos del Run 1 están en `reports/figures/figures1/`:
+Las matrices de confusión para todos los modelos del Run 1 están en `reports/figures/1st_try/`:
 
 | Archivo | Modelo |
 |---------|--------|
