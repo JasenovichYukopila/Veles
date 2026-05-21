@@ -84,46 +84,46 @@ Entrena y evalúa 7 clasificadores para predicción de género musical.
 
 Métricas agregadas por género musical (7 filas, 17 columnas).
 
-| Columna | Descripción |
-|---|---|
-| `genero` | Nombre del género musical |
-| `popularidad_promedio` | Popularidad promedio de los artistas (0–100) |
-| `seguidores_totales` | Suma de seguidores de todos los artistas del género |
-| `edad_promedio_oyente` | Edad promedio del oyente (dato sintético) |
-| `porcentaje_hombres` | % hombres oyentes (dato sintético) |
-| `porcentaje_mujeres` | % mujeres oyentes (dato sintético) |
-| `potencial_ganancia_usd` | Ganancia potencial estimada en USD (dato sintético) |
-| `duracion_promedio_ms` | Duración promedio de las canciones en milisegundos |
-| `porcentaje_explicitos` | % de canciones con contenido explícito |
-| `popularidad_max` | Popularidad máxima entre artistas del género |
-| `popularidad_min` | Popularidad mínima entre artistas del género |
-| `diversidad_generos_secundarios` | Cantidad de sub-géneros distintos encontrados |
-| `total_canciones_encontradas` | Total de canciones obtenidas para el género |
-| `porcentaje_con_preview` | % de canciones que tienen preview disponible |
-| `promedio_seguidores_por_artista` | Promedio de seguidores por artista |
-| `potencial_ganancia_usd_log` | Logaritmo natural de `potencial_ganancia_usd` |
-| `seguidores_totales_log` | Logaritmo natural de `seguidores_totales` |
+| Columna                           | Descripción                                         |
+| --------------------------------- | --------------------------------------------------- |
+| `genero`                          | Nombre del género musical                           |
+| `popularidad_promedio`            | Popularidad promedio de los artistas (0–100)        |
+| `seguidores_totales`              | Suma de seguidores de todos los artistas del género |
+| `edad_promedio_oyente`            | Edad promedio del oyente (dato sintético)           |
+| `porcentaje_hombres`              | % hombres oyentes (dato sintético)                  |
+| `porcentaje_mujeres`              | % mujeres oyentes (dato sintético)                  |
+| `potencial_ganancia_usd`          | Ganancia potencial estimada en USD (dato sintético) |
+| `duracion_promedio_ms`            | Duración promedio de las canciones en milisegundos  |
+| `porcentaje_explicitos`           | % de canciones con contenido explícito              |
+| `popularidad_max`                 | Popularidad máxima entre artistas del género        |
+| `popularidad_min`                 | Popularidad mínima entre artistas del género        |
+| `diversidad_generos_secundarios`  | Cantidad de sub-géneros distintos encontrados       |
+| `total_canciones_encontradas`     | Total de canciones obtenidas para el género         |
+| `porcentaje_con_preview`          | % de canciones que tienen preview disponible        |
+| `promedio_seguidores_por_artista` | Promedio de seguidores por artista                  |
+| `potencial_ganancia_usd_log`      | Logaritmo natural de `potencial_ganancia_usd`       |
+| `seguidores_totales_log`          | Logaritmo natural de `seguidores_totales`           |
 
 ### `data/spotify/spotify_b2c_recommendations.csv`
 
 Catálogo plano de artistas y canciones por género para consumo B2C.
 
-| Columna | Descripción |
-|---|---|
-| `genero` | Nombre del género musical |
-| `artista_nombre` | Nombre del artista |
-| `artista_id` | ID de Spotify del artista |
-| `popularidad_artista` | Popularidad del artista (0–100) |
-| `seguidores_artista` | Seguidores del artista |
-| `imagen_artista` | URL de la imagen del artista |
-| `cancion_nombre` | Nombre de la canción |
-| `cancion_id` | ID de Spotify de la canción |
-| `popularidad_cancion` | Popularidad de la canción (0–100) |
-| `duracion_ms` | Duración de la canción en milisegundos |
-| `es_explicito` | Si la canción tiene contenido explícito |
-| `url_preview` | URL del preview de 30s (vacío si no disponible) |
-| `imagen_album` | URL de la imagen del álbum |
-| `generos_artista` | Lista de sub-géneros del artista |
+| Columna               | Descripción                                     |
+| --------------------- | ----------------------------------------------- |
+| `genero`              | Nombre del género musical                       |
+| `artista_nombre`      | Nombre del artista                              |
+| `artista_id`          | ID de Spotify del artista                       |
+| `popularidad_artista` | Popularidad del artista (0–100)                 |
+| `seguidores_artista`  | Seguidores del artista                          |
+| `imagen_artista`      | URL de la imagen del artista                    |
+| `cancion_nombre`      | Nombre de la canción                            |
+| `cancion_id`          | ID de Spotify de la canción                     |
+| `popularidad_cancion` | Popularidad de la canción (0–100)               |
+| `duracion_ms`         | Duración de la canción en milisegundos          |
+| `es_explicito`        | Si la canción tiene contenido explícito         |
+| `url_preview`         | URL del preview de 30s (vacío si no disponible) |
+| `imagen_album`        | URL de la imagen del álbum                      |
+| `generos_artista`     | Lista de sub-géneros del artista                |
 
 ---
 
@@ -152,6 +152,73 @@ SPOTIPY_CLIENT_SECRET="tu_client_secret"
 ```
 
 El notebook carga las credenciales desde `.env` automáticamente con `python-dotenv`. **No se deben hardcodear credenciales en el notebook.**
+
+---
+
+## Aplicación Web — SoundID
+
+Interfaz interactiva para demostración del modelo en tiempo real. Permite grabar audio desde el micrófono y obtener la clasificación del género musical al instante.
+
+### Requisitos adicionales
+
+- Node.js 18+
+- ffmpeg instalado y en el PATH del sistema
+  - Windows: `winget install ffmpeg`
+  - Mac: `brew install ffmpeg`
+  - Linux: `sudo apt install ffmpeg`
+
+### Correr el backend
+
+```bash
+cd backend
+python -m venv .venv
+
+# Windows
+.\.venv\Scripts\Activate.ps1
+
+# Mac/Linux
+source .venv/bin/activate
+
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+```
+
+Servidor disponible en `http://localhost:8000`.
+Documentación de la API en `http://localhost:8000/docs`.
+
+### Correr el frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Aplicación disponible en `http://localhost:5173`.
+
+### Conectar el modelo entrenado
+
+Cuando el modelo esté exportado, abrir `backend/app/classifier.py` y reemplazar estas dos líneas en la función `classify`:
+
+```python
+genre      = random.choice(GENRES)
+confidence = round(random.uniform(0.60, 0.95), 2)
+```
+
+Por la predicción real del modelo:
+
+```python
+features   = extract_features(audio, sr).reshape(1, -1)
+prediction = model.predict(features)[0]
+confidence = model.predict_proba(features).max()
+genre      = prediction
+```
+
+### Notas
+
+- El backend debe estar corriendo antes de usar la aplicación.
+- El frontend se conecta al backend en `http://localhost:8000`.
+- El entorno virtual `.venv` y `node_modules` no se versionan en Git.
 
 ---
 

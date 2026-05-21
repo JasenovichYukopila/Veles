@@ -1,0 +1,105 @@
+.stage-processing {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 100vh;
+  }
+  
+  .stage-processing__content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3rem;
+    animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0);    }
+  }
+  
+  .stage-processing__visual {
+    position: relative;
+    width: 280px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .stage-processing__bars {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 100%;
+  }
+  
+  .stage-processing__bar {
+    width: 3px;
+    border-radius: var(--radius-full);
+    background: var(--color-accent);
+    animation: analyze 1.2s ease-in-out infinite;
+  }
+  
+  .stage-processing__bar:nth-child(odd) {
+    height: 40%;
+  }
+  
+  .stage-processing__bar:nth-child(even) {
+    height: 70%;
+  }
+  
+  @keyframes analyze {
+    0%, 100% {
+      transform: scaleY(0.3);
+      opacity:   0.3;
+    }
+    50% {
+      transform: scaleY(1);
+      opacity:   1;
+    }
+  }
+  
+  .stage-processing__scanner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 2px;
+    height: 100%;
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      var(--color-accent) 50%,
+      transparent 100%
+    );
+    animation: scan 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    opacity: 0.8;
+  }
+  
+  @keyframes scan {
+    0%   { left: 0%;   opacity: 0; }
+    10%  { opacity: 1; }
+    90%  { opacity: 1; }
+    100% { left: 100%; opacity: 0; }
+  }
+  
+  .stage-processing__text {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .stage-processing__label {
+    font-size: 0.8rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-text-secondary);
+  }
+  
+  .stage-processing__hint {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    letter-spacing: 0.04em;
+  }
