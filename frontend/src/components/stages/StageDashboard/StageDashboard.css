@@ -11,7 +11,7 @@
 
 .stage-dashboard__content {
     width: 100%;
-    max-width: 960px;
+    max-width: 1200px;
     animation: dashFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
@@ -26,7 +26,7 @@
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
-    max-width: 640px;
+    max-width: 960px;
     margin: 0 auto;
 }
 
@@ -57,23 +57,23 @@
 
 .dashboard-menu__cards {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: 1rem;
     margin-top: 1rem;
 }
 
 .dashboard-menu__card {
     display: flex;
-    align-items: flex-start;
+    flex-direction: column;
     gap: 1.25rem;
-    padding: 1.5rem;
+    padding: 1.75rem;
     border-radius: var(--radius-md);
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.06);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     text-align: left;
-    width: 100%;
+    flex: 1;
     transition: background var(--transition-fast),
                 border-color var(--transition-fast),
                 transform var(--transition-fast);
@@ -82,7 +82,7 @@
 .dashboard-menu__card:hover {
     background: rgba(255, 255, 255, 0.07);
     border-color: rgba(var(--genre-color-rgb, 124, 58, 237), 0.3);
-    transform: translateX(4px);
+    transform: translateY(-4px);
 }
 
 .dashboard-menu__card-icon {
@@ -146,8 +146,9 @@
 
 .dashboard-view__header {
     display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 2rem;
 }
 
 .dashboard-view__back {
@@ -155,8 +156,9 @@
     color: var(--color-text-muted);
     letter-spacing: 0.04em;
     transition: color var(--transition-fast);
-    align-self: flex-start;
+    flex-shrink: 0;
     padding: 0.25rem 0;
+    padding-bottom: 0.4rem;
 }
 
 .dashboard-view__back:hover {
@@ -187,9 +189,24 @@
 /* ─── Business Cards ────────────────────────── */
 
 .dashboard-business__cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    display: flex;
+    flex-direction: row;
     gap: 1rem;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.1) transparent;
+}
+
+.dashboard-business__cards::-webkit-scrollbar {
+    height: 4px;
+}
+.dashboard-business__cards::-webkit-scrollbar-track {
+    background: transparent;
+}
+.dashboard-business__cards::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.1);
+    border-radius: var(--radius-full);
 }
 
 .dashboard-business__card {
@@ -202,13 +219,15 @@
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+    flex-shrink: 0;
+    width: 220px;
     transition: border-color var(--transition-fast),
                 transform var(--transition-fast);
 }
 
 .dashboard-business__card:hover {
     border-color: rgba(var(--genre-color-rgb, 124, 58, 237), 0.2);
-    transform: translateY(-2px);
+    transform: translateY(-4px);
 }
 
 .dashboard-business__card-genre {
@@ -282,11 +301,14 @@
 
 .dashboard-business__charts {
     display: flex;
-    flex-direction: column;
-    gap: 2rem;
+    flex-direction: row;
+    gap: 1.5rem;
+    align-items: flex-start;
 }
 
 .dashboard-business__chart {
+    flex: 1;
+    min-width: 0;
     padding: 1.5rem;
     border-radius: var(--radius-md);
     background: rgba(255, 255, 255, 0.03);
@@ -476,22 +498,42 @@
 
 .dashboard-personal__artists {
     display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
+    flex-direction: row;
+    gap: 1.25rem;
+    overflow-x: auto;
+    padding-bottom: 0.75rem;
+    align-items: flex-start;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.1) transparent;
+}
+
+.dashboard-personal__artists::-webkit-scrollbar {
+    height: 4px;
+}
+.dashboard-personal__artists::-webkit-scrollbar-track {
+    background: transparent;
+}
+.dashboard-personal__artists::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.1);
+    border-radius: var(--radius-full);
 }
 
 .dashboard-personal__artist {
+    flex-shrink: 0;
+    width: 260px;
     padding: 1.25rem;
     border-radius: var(--radius-md);
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.06);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    transition: border-color var(--transition-fast);
+    transition: border-color var(--transition-fast),
+                transform var(--transition-fast);
 }
 
 .dashboard-personal__artist:hover {
     border-color: rgba(var(--genre-color-rgb, 124, 58, 237), 0.2);
+    transform: translateY(-4px);
 }
 
 .dashboard-personal__artist-header {
@@ -550,17 +592,36 @@
 
 .dashboard-personal__songs {
     display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-    margin-left: 4rem;
+    flex-direction: row;
+    gap: 0.5rem;
+    margin-left: 0;
+    margin-top: 0.25rem;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.08) transparent;
+}
+
+.dashboard-personal__songs::-webkit-scrollbar {
+    height: 3px;
+}
+.dashboard-personal__songs::-webkit-scrollbar-track {
+    background: transparent;
+}
+.dashboard-personal__songs::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.08);
+    border-radius: var(--radius-full);
 }
 
 .dashboard-personal__song {
     display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.6rem 0.75rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.4rem;
+    padding: 0.5rem;
     border-radius: var(--radius-sm);
+    flex-shrink: 0;
+    width: 90px;
     transition: background var(--transition-fast);
 }
 
@@ -569,8 +630,8 @@
 }
 
 .dashboard-personal__song-img {
-    width: 36px;
-    height: 36px;
+    width: 80px;
+    height: 80px;
     border-radius: var(--radius-sm);
     overflow: hidden;
     flex-shrink: 0;
@@ -597,17 +658,18 @@
     display: flex;
     flex-direction: column;
     gap: 0.1rem;
-    flex: 1;
+    width: 100%;
     min-width: 0;
 }
 
 .dashboard-personal__song-title {
-    font-size: 0.82rem;
+    font-size: 0.72rem;
     font-weight: 500;
     color: var(--color-text-primary);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    width: 100%;
 }
 
 .dashboard-personal__song-pop {
