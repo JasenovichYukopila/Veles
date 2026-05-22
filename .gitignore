@@ -5,13 +5,6 @@
 *.flac
 *.ogg
 
-# Virtual environment
-.venv/
-
-# API caches and credentials
-data/external/
-.cache/
-.env
 
 # Model artifacts
 *.pkl

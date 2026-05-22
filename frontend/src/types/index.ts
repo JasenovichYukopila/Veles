@@ -26,24 +26,27 @@ export interface ClassificationError {
 
 export interface BusinessMetric {
     genero: string;
-    popularidad_promedio: number;
-    seguidores_totales: number;
+    artistas_encontrados: number;
+    canciones_encontradas: number;
+    duracion_promedio_min: number | null;
+    porcentaje_explicitos: number | null;
     edad_promedio_oyente: number;
     porcentaje_hombres: number;
     porcentaje_mujeres: number;
     potencial_ganancia_usd: number;
+    meta_ingresos_usd: number;
+    cumplimiento_meta_pct: number;
+    tendencia_crecimiento_pct: number;
 }
 
 export interface PersonalRecommendation {
     genero: string;
     artista_nombre: string;
     artista_id: string;
-    popularidad_artista: number;
-    seguidores_artista: number;
     imagen_artista: string;
     cancion_nombre: string;
     cancion_id: string;
-    popularidad_cancion: number;
-    url_preview: string;
+    duracion_ms: number;
+    es_explicito: boolean;
     imagen_album: string;
 }

@@ -55,8 +55,8 @@ function DashboardMenu({ genre, onSelect, onReset }: DashboardMenuProps) {
                     <div className="dashboard-menu__card-body">
                         <h3 className="dashboard-menu__card-title">Empresarial</h3>
                         <p className="dashboard-menu__card-desc">
-                            Métricas comerciales agregadas por género musical: popularidad,
-                            seguidores, demografía de audiencia y potencial de ganancia.
+                            KPIs de mercado, metas de ingresos y demografía de audiencia
+                            por género musical.
                         </p>
                         <span className="dashboard-menu__card-action">Ver dashboard →</span>
                     </div>
@@ -69,8 +69,8 @@ function DashboardMenu({ genre, onSelect, onReset }: DashboardMenuProps) {
                     <div className="dashboard-menu__card-body">
                         <h3 className="dashboard-menu__card-title">Personal</h3>
                         <p className="dashboard-menu__card-desc">
-                            Artistas y canciones recomendadas del género <strong>{genre}</strong>,
-                            con datos de popularidad y seguidores.
+                            Artistas y canciones del género <strong>{genre}</strong> extraídos
+                            en tiempo real desde Spotify.
                         </p>
                         <span className="dashboard-menu__card-action">Ver dashboard →</span>
                     </div>
@@ -86,6 +86,12 @@ function DashboardMenu({ genre, onSelect, onReset }: DashboardMenuProps) {
 
 /* ─── Business View ──────────────────────────── */
 
+function fmt(ms: number): string {
+    const m = Math.floor(ms / 60000);
+    const s = Math.floor((ms % 60000) / 1000);
+    return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
 interface BusinessViewProps {
     onBack: () => void;
 }
@@ -99,10 +105,7 @@ function BusinessView({ onBack }: BusinessViewProps) {
         let cancelled = false;
         fetchBusinessMetrics()
             .then((result) => {
-                if (!cancelled) {
-                    setData(result);
-                    setLoading(false);
-                }
+                if (!cancelled) { setData(result); setLoading(false); }
             })
             .catch((err) => {
                 if (!cancelled) {
@@ -116,8 +119,10 @@ function BusinessView({ onBack }: BusinessViewProps) {
     if (loading) return <DashboardLoading />;
     if (error) return <DashboardError message={error} onRetry={() => window.location.reload()} />;
 
+    // Solo géneros con datos reales del catálogo
+    const withData = data.filter((d) => d.artistas_encontrados > 0);
     const sortedByRevenue = [...data].sort((a, b) => b.potencial_ganancia_usd - a.potencial_ganancia_usd);
-    const maxRevenue = Math.max(...data.map((d) => d.potencial_ganancia_usd));
+    const maxRevenue = Math.max(...data.map((d) => d.potencial_ganancia_usd), 1);
 
     return (
         <div className="dashboard-view">
@@ -127,20 +132,21 @@ function BusinessView({ onBack }: BusinessViewProps) {
                     <span className="dashboard-view__label">Dashboard Empresarial</span>
                     <h2 className="dashboard-view__title">Métricas de Mercado</h2>
                     <p className="dashboard-view__desc">
-                        Comparativa de indicadores comerciales por género musical
+                        KPIs por género para toma de decisiones comerciales
                     </p>
                 </div>
             </div>
 
+            {/* ── Cards: catálogo real por género ── */}
             <div className="dashboard-business__cards">
-                {sortedByRevenue.map((item) => (
+                {withData.map((item) => (
                     <div key={item.genero} className="dashboard-business__card">
                         <div className="dashboard-business__card-genre">{item.genero}</div>
                         <div className="dashboard-business__card-metric">
                             <span className="dashboard-business__card-value">
                                 ${(item.potencial_ganancia_usd / 1000).toFixed(0)}K
                             </span>
-                            <span className="dashboard-business__card-label">Ganancia potencial</span>
+                            <span className="dashboard-business__card-label">Potencial ganancia</span>
                         </div>
                         <div className="dashboard-business__card-bar">
                             <div
@@ -148,20 +154,54 @@ function BusinessView({ onBack }: BusinessViewProps) {
                                 style={{ width: `${(item.potencial_ganancia_usd / maxRevenue) * 100}%` }}
                             />
                         </div>
-                        <div className="dashboard-business__card-stats">
-                            <div>
-                                <span className="dashboard-business__stat-value">{(item.popularidad_promedio).toFixed(0)}</span>
-                                <span className="dashboard-business__stat-label">Popularidad</span>
+                        {item.porcentaje_explicitos !== null && item.porcentaje_explicitos > 0 && (
+                            <div className="dashboard-business__explicit-badge">
+                                {item.porcentaje_explicitos.toFixed(0)}% explícito
                             </div>
-                            <div>
-                                <span className="dashboard-business__stat-value">{item.seguidores_totales.toLocaleString()}</span>
-                                <span className="dashboard-business__stat-label">Seguidores</span>
-                            </div>
-                        </div>
+                        )}
                     </div>
                 ))}
             </div>
 
+            {/* ── Medidor de metas ── */}
+            <div className="dashboard-business__chart">
+                <h3 className="dashboard-chart__title">Medidor de Metas — Ingresos vs Objetivo</h3>
+                <div className="dashboard-chart__table">
+                    {sortedByRevenue.map((item) => {
+                        const pct = Math.min(item.cumplimiento_meta_pct, 100);
+                        const trend = item.tendencia_crecimiento_pct;
+                        return (
+                            <div key={item.genero} className="dashboard-chart__row dashboard-chart__row--goal">
+                                <span className="dashboard-chart__row-label">{item.genero}</span>
+                                <div className="dashboard-chart__goal-body">
+                                    <div className="dashboard-chart__goal-bar-row">
+                                        <div className="dashboard-chart__bar-group">
+                                            <div
+                                                className="dashboard-chart__bar dashboard-chart__bar--male"
+                                                style={{ width: `${pct}%` }}
+                                            />
+                                        </div>
+                                        <span className="dashboard-chart__goal-pct">{pct.toFixed(0)}%</span>
+                                    </div>
+                                    <div className="dashboard-chart__goal-labels">
+                                        <span>Meta: ${(item.meta_ingresos_usd / 1000).toFixed(0)}K</span>
+                                        <span>·</span>
+                                        <span>Actual: ${(item.potencial_ganancia_usd / 1000).toFixed(0)}K</span>
+                                    </div>
+                                </div>
+                                <span
+                                    className="dashboard-chart__row-age"
+                                    style={{ color: trend >= 0 ? '#22c55e' : '#ef4444', fontWeight: 600 }}
+                                >
+                                    {trend >= 0 ? '↑' : '↓'} {Math.abs(trend)}%
+                                </span>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+
+            {/* ── Demografía + barras de potencial ── */}
             <div className="dashboard-business__charts">
                 <div className="dashboard-business__chart">
                     <h3 className="dashboard-chart__title">Demografía por género</h3>
@@ -195,7 +235,7 @@ function BusinessView({ onBack }: BusinessViewProps) {
                 </div>
 
                 <div className="dashboard-business__chart">
-                    <h3 className="dashboard-chart__title">Ingreso potencial por género</h3>
+                    <h3 className="dashboard-chart__title">Potencial de ganancia</h3>
                     <div className="dashboard-chart__bars-vertical">
                         {sortedByRevenue.map((item) => (
                             <div key={item.genero} className="dashboard-chart__vbar-group">
@@ -215,30 +255,33 @@ function BusinessView({ onBack }: BusinessViewProps) {
                 </div>
             </div>
 
+            {/* ── Tabla resumen ── */}
             <div className="dashboard-business__table-wrap">
-                <h3 className="dashboard-chart__title">Tabla completa</h3>
+                <h3 className="dashboard-chart__title">Tabla resumen por género</h3>
                 <div className="dashboard-business__table-scroll">
                     <table className="dashboard-business__table">
                         <thead>
                             <tr>
                                 <th>Género</th>
-                                <th>Popularidad</th>
-                                <th>Seguidores</th>
+                                <th>Artistas</th>
+                                <th>Canciones</th>
+                                <th>Duración prom.</th>
+                                <th>% Explícito</th>
                                 <th>Edad prom.</th>
-                                <th>% Hombres</th>
-                                <th>% Mujeres</th>
-                                <th>Ganancia USD</th>
+                                <th>% H / M</th>
+                                <th>Potencial</th>
                             </tr>
                         </thead>
                         <tbody>
                             {data.map((item) => (
                                 <tr key={item.genero}>
                                     <td>{item.genero}</td>
-                                    <td>{item.popularidad_promedio.toFixed(1)}</td>
-                                    <td>{item.seguidores_totales.toLocaleString()}</td>
+                                    <td>{item.artistas_encontrados > 0 ? item.artistas_encontrados : '—'}</td>
+                                    <td>{item.canciones_encontradas > 0 ? item.canciones_encontradas : '—'}</td>
+                                    <td>{item.duracion_promedio_min !== null ? `${item.duracion_promedio_min} min` : '—'}</td>
+                                    <td>{item.porcentaje_explicitos !== null ? `${item.porcentaje_explicitos.toFixed(0)}%` : '—'}</td>
                                     <td>{item.edad_promedio_oyente.toFixed(1)}</td>
-                                    <td>{item.porcentaje_hombres.toFixed(1)}%</td>
-                                    <td>{item.porcentaje_mujeres.toFixed(1)}%</td>
+                                    <td>{item.porcentaje_hombres.toFixed(0)}% / {item.porcentaje_mujeres.toFixed(0)}%</td>
                                     <td>${item.potencial_ganancia_usd.toLocaleString()}</td>
                                 </tr>
                             ))}
@@ -266,10 +309,7 @@ function PersonalView({ genre, onBack }: PersonalViewProps) {
         let cancelled = false;
         fetchPersonalRecommendations(genre)
             .then((result) => {
-                if (!cancelled) {
-                    setData(result);
-                    setLoading(false);
-                }
+                if (!cancelled) { setData(result); setLoading(false); }
             })
             .catch((err) => {
                 if (!cancelled) {
@@ -284,15 +324,11 @@ function PersonalView({ genre, onBack }: PersonalViewProps) {
         const map = new Map<string, PersonalRecommendation[]>();
         for (const item of data) {
             const existing = map.get(item.artista_nombre);
-            if (existing) {
-                existing.push(item);
-            } else {
-                map.set(item.artista_nombre, [item]);
-            }
+            if (existing) existing.push(item);
+            else map.set(item.artista_nombre, [item]);
         }
-        return Array.from(map.entries()).sort(
-            (a, b) => b[1][0].seguidores_artista - a[1][0].seguidores_artista
-        );
+        // Orden: artistas con más canciones primero
+        return Array.from(map.entries()).sort((a, b) => b[1].length - a[1].length);
     }, [data]);
 
     if (loading) return <DashboardLoading />;
@@ -343,7 +379,7 @@ function PersonalView({ genre, onBack }: PersonalViewProps) {
                             <div className="dashboard-personal__artist-chip-info">
                                 <span className="dashboard-personal__artist-chip-name">{artistName}</span>
                                 <span className="dashboard-personal__artist-chip-followers">
-                                    {first.seguidores_artista.toLocaleString()} seguidores
+                                    {items.length} {items.length === 1 ? 'canción' : 'canciones'}
                                 </span>
                             </div>
                         </div>
@@ -364,7 +400,10 @@ function PersonalView({ genre, onBack }: PersonalViewProps) {
                         <div className="dashboard-personal__song-card-info">
                             <span className="dashboard-personal__song-card-title">{item.cancion_nombre}</span>
                             <span className="dashboard-personal__song-card-artist">{item.artista_nombre}</span>
-                            <span className="dashboard-personal__song-card-pop">★ {item.popularidad_cancion}</span>
+                            <span className="dashboard-personal__song-card-pop">
+                                {fmt(item.duracion_ms)}
+                                {item.es_explicito && <span className="dashboard-personal__explicit-tag"> E</span>}
+                            </span>
                         </div>
                     </div>
                 ))}

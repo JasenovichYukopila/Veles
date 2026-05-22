@@ -294,6 +294,19 @@
     text-transform: uppercase;
 }
 
+/* ─── Explicit badge (business card) ───────── */
+
+.dashboard-business__explicit-badge {
+    font-size: 0.68rem;
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    border-radius: var(--radius-full);
+    padding: 0.15rem 0.55rem;
+    align-self: flex-start;
+    letter-spacing: 0.04em;
+}
+
 /* ─── Charts ────────────────────────────────── */
 
 .dashboard-business__charts {
@@ -494,6 +507,42 @@
     color: var(--color-text-primary);
 }
 
+/* ─── Goal meter rows ───────────────────────── */
+
+.dashboard-chart__row--goal {
+    align-items: flex-start;
+    padding: 0.4rem 0;
+}
+
+.dashboard-chart__goal-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.dashboard-chart__goal-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.dashboard-chart__goal-pct {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    font-family: var(--font-mono);
+    width: 34px;
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.dashboard-chart__goal-labels {
+    display: flex;
+    gap: 0.4rem;
+    font-size: 0.7rem;
+    color: var(--color-text-secondary);
+}
+
 /* ─── Personal — Artists strip ──────────────── */
 
 .dashboard-personal__artists-strip {
@@ -648,6 +697,19 @@
     font-size: 0.72rem;
     color: var(--genre-color, var(--color-accent));
     font-family: var(--font-mono);
+}
+
+/* ─── Explicit tag (song card) ─────────────── */
+
+.dashboard-personal__explicit-tag {
+    font-size: 0.65rem;
+    background: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+    border-radius: 3px;
+    padding: 0 3px;
+    margin-left: 4px;
+    font-weight: 700;
+    vertical-align: middle;
 }
 
 /* ─── Loading ───────────────────────────────── */

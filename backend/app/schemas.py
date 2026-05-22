@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Literal
+from typing import Literal, Optional
 
 Genre = Literal[
     'Clásica',
@@ -20,24 +20,27 @@ class ErrorResponse(BaseModel):
 
 class BusinessMetricItem(BaseModel):
     genero: str
-    popularidad_promedio: float = 0
-    seguidores_totales: int = 0
+    artistas_encontrados: int = 0
+    canciones_encontradas: int = 0
+    duracion_promedio_min: Optional[float] = None
+    porcentaje_explicitos: Optional[float] = None
     edad_promedio_oyente: float = 0
     porcentaje_hombres: float = 0
     porcentaje_mujeres: float = 0
     potencial_ganancia_usd: int = 0
+    meta_ingresos_usd: int = 0
+    cumplimiento_meta_pct: float = 0
+    tendencia_crecimiento_pct: float = 0
 
 class PersonalRecommendationItem(BaseModel):
     genero: str = ''
     artista_nombre: str = ''
     artista_id: str = ''
-    popularidad_artista: int = 0
-    seguidores_artista: int = 0
     imagen_artista: str = ''
     cancion_nombre: str = ''
     cancion_id: str = ''
-    popularidad_cancion: int = 0
-    url_preview: str = ''
+    duracion_ms: int = 0
+    es_explicito: bool = False
     imagen_album: str = ''
 
 class BusinessMetricsResponse(BaseModel):

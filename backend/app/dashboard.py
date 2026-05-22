@@ -7,14 +7,15 @@ DATA_DIR = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'spotify'
 BUSINESS_FILE = os.path.join(DATA_DIR, 'spotify_business_metrics.csv')
 PERSONAL_FILE  = os.path.join(DATA_DIR, 'spotify_b2c_recommendations.csv')
 
+# Mapa de nombre interno (CSV) → nombre de display (frontend)
 GENRE_MAP = {
-    'pop': 'Pop',
-    'rock': 'Rock',
-    'jazz': 'Jazz',
-    'hip-hop': 'Hip-Hop',
-    'classical': 'Clásica',
-    'electronic': 'Electrónica',
-    'reggaeton': 'Vallenato',
+    'vallenato':   'Vallenato',
+    'jazz':        'Jazz',
+    'clasica':     'Clásica',
+    'pop':         'Pop',
+    'rock':        'Rock',
+    'electronica': 'Electrónica',
+    'hiphop':      'Hip-Hop',
 }
 
 INVERSE_GENRE_MAP = {v: k for k, v in GENRE_MAP.items()}
@@ -32,16 +33,35 @@ def get_business_metrics() -> list[dict[str, Any]]:
     rows = _read_csv(BUSINESS_FILE)
     result = []
     for row in rows:
-        mapped_genre = GENRE_MAP.get(row.get('genero', ''), row.get('genero', ''))
-        entry = {
-            'genero': mapped_genre,
-            'popularidad_promedio': _float_or(row.get('popularidad_promedio'), 0),
-            'seguidores_totales': _int_or(row.get('seguidores_totales'), 0),
-            'edad_promedio_oyente': _float_or(row.get('edad_promedio_oyente'), 0),
-            'porcentaje_hombres': _float_or(row.get('porcentaje_hombres'), 0),
-            'porcentaje_mujeres': _float_or(row.get('porcentaje_mujeres'), 0),
-            'potencial_ganancia_usd': _int_or(row.get('potencial_ganancia_usd'), 0),
+        raw_genre = row.get('genero', '')
+        display_genre = GENRE_MAP.get(raw_genre, raw_genre)
+
+        artistas = _int_or(row.get('artistas_encontrados'), 0)
+        canciones = _int_or(row.get('canciones_encontradas'), 0)
+
+        entry: dict[str, Any] = {
+            'genero': display_genre,
+            'artistas_encontrados': artistas,
+            'canciones_encontradas': canciones,
         }
+
+        # Solo incluir métricas de catálogo si hay datos reales
+        if canciones > 0:
+            entry['duracion_promedio_min'] = _float_or(row.get('duracion_promedio_min'), None)
+            entry['porcentaje_explicitos'] = _float_or(row.get('porcentaje_explicitos'), None)
+        else:
+            entry['duracion_promedio_min'] = None
+            entry['porcentaje_explicitos'] = None
+
+        # Datos sintéticos — siempre presentes
+        entry['edad_promedio_oyente'] = _float_or(row.get('edad_promedio_oyente'), 0)
+        entry['porcentaje_hombres'] = _float_or(row.get('porcentaje_hombres'), 0)
+        entry['porcentaje_mujeres'] = _float_or(row.get('porcentaje_mujeres'), 0)
+        entry['potencial_ganancia_usd'] = _int_or(row.get('potencial_ganancia_usd'), 0)
+        entry['meta_ingresos_usd'] = _int_or(row.get('meta_ingresos_usd'), 0)
+        entry['cumplimiento_meta_pct'] = _float_or(row.get('cumplimiento_meta_pct'), 0)
+        entry['tendencia_crecimiento_pct'] = _float_or(row.get('tendencia_crecimiento_pct'), 0)
+
         result.append(entry)
     return result
 
@@ -56,21 +76,19 @@ def get_personal_recommendations(genre: str) -> list[dict[str, Any]]:
             'genero': GENRE_MAP.get(row.get('genero', ''), row.get('genero', '')),
             'artista_nombre': row.get('artista_nombre', ''),
             'artista_id': row.get('artista_id', ''),
-            'popularidad_artista': _int_or(row.get('popularidad_artista'), 0),
-            'seguidores_artista': _int_or(row.get('seguidores_artista'), 0),
             'imagen_artista': row.get('imagen_artista', ''),
             'cancion_nombre': row.get('cancion_nombre', ''),
             'cancion_id': row.get('cancion_id', ''),
-            'popularidad_cancion': _int_or(row.get('popularidad_cancion'), 0),
-            'url_preview': row.get('url_preview', ''),
+            'duracion_ms': _int_or(row.get('duracion_ms'), 0),
+            'es_explicito': row.get('es_explicito', 'False').strip().lower() == 'true',
             'imagen_album': row.get('imagen_album', ''),
         }
         result.append(entry)
     return result
 
 
-def _float_or(val: str | None, default: float) -> float:
-    if val is None:
+def _float_or(val: str | None, default: float | None) -> float | None:
+    if val is None or val == '':
         return default
     try:
         return float(val)
@@ -79,7 +97,7 @@ def _float_or(val: str | None, default: float) -> float:
 
 
 def _int_or(val: str | None, default: int) -> int:
-    if val is None:
+    if val is None or val == '':
         return default
     try:
         return int(float(val))
