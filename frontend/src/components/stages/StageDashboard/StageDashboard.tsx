@@ -306,9 +306,7 @@ function PersonalView({ genre, onBack }: PersonalViewProps) {
                     <div>
                         <span className="dashboard-view__label">Dashboard Personal</span>
                         <h2 className="dashboard-view__title">{genre}</h2>
-                        <p className="dashboard-view__desc">
-                            No hay datos disponibles para este género.
-                        </p>
+                        <p className="dashboard-view__desc">No hay datos disponibles para este género.</p>
                     </div>
                 </div>
             </div>
@@ -328,62 +326,48 @@ function PersonalView({ genre, onBack }: PersonalViewProps) {
                 </div>
             </div>
 
-            <div className="dashboard-personal__artists">
+            <div className="dashboard-personal__artists-strip">
                 {artists.map(([artistName, items]) => {
                     const first = items[0];
                     return (
-                        <div key={artistName} className="dashboard-personal__artist">
-                            <div className="dashboard-personal__artist-header">
-                                <div className="dashboard-personal__artist-img">
-                                    {first.imagen_artista ? (
-                                        <img
-                                            src={first.imagen_artista}
-                                            alt={artistName}
-                                            loading="lazy"
-                                        />
-                                    ) : (
-                                        <div className="dashboard-personal__artist-placeholder">
-                                            {artistName.charAt(0)}
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="dashboard-personal__artist-info">
-                                    <h3 className="dashboard-personal__artist-name">{artistName}</h3>
-                                    <div className="dashboard-personal__artist-stats">
-                                        <span>★ {first.popularidad_artista}</span>
-                                        <span>{first.seguidores_artista.toLocaleString()} seguidores</span>
+                        <div key={artistName} className="dashboard-personal__artist-chip">
+                            <div className="dashboard-personal__artist-chip-img">
+                                {first.imagen_artista ? (
+                                    <img src={first.imagen_artista} alt={artistName} loading="lazy" />
+                                ) : (
+                                    <div className="dashboard-personal__artist-chip-placeholder">
+                                        {artistName.charAt(0)}
                                     </div>
-                                </div>
+                                )}
                             </div>
-
-                            <div className="dashboard-personal__songs">
-                                {items.map((item) => (
-                                    <div key={item.cancion_id || item.cancion_nombre} className="dashboard-personal__song">
-                                        <div className="dashboard-personal__song-img">
-                                            {item.imagen_album ? (
-                                                <img
-                                                    src={item.imagen_album}
-                                                    alt={item.cancion_nombre}
-                                                    loading="lazy"
-                                                />
-                                            ) : (
-                                                <div className="dashboard-personal__song-placeholder">
-                                                    ♪
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="dashboard-personal__song-info">
-                                            <span className="dashboard-personal__song-title">{item.cancion_nombre}</span>
-                                            <span className="dashboard-personal__song-pop">
-                                                Popularidad: {item.popularidad_cancion}
-                                            </span>
-                                        </div>
-                                    </div>
-                                ))}
+                            <div className="dashboard-personal__artist-chip-info">
+                                <span className="dashboard-personal__artist-chip-name">{artistName}</span>
+                                <span className="dashboard-personal__artist-chip-followers">
+                                    {first.seguidores_artista.toLocaleString()} seguidores
+                                </span>
                             </div>
                         </div>
                     );
                 })}
+            </div>
+
+            <div className="dashboard-personal__songs-grid">
+                {data.map((item) => (
+                    <div key={item.cancion_id || item.cancion_nombre} className="dashboard-personal__song-card">
+                        <div className="dashboard-personal__song-card-img">
+                            {item.imagen_album ? (
+                                <img src={item.imagen_album} alt={item.cancion_nombre} loading="lazy" />
+                            ) : (
+                                <div className="dashboard-personal__song-card-placeholder">♪</div>
+                            )}
+                        </div>
+                        <div className="dashboard-personal__song-card-info">
+                            <span className="dashboard-personal__song-card-title">{item.cancion_nombre}</span>
+                            <span className="dashboard-personal__song-card-artist">{item.artista_nombre}</span>
+                            <span className="dashboard-personal__song-card-pop">★ {item.popularidad_cancion}</span>
+                        </div>
+                    </div>
+                ))}
             </div>
         </div>
     );
