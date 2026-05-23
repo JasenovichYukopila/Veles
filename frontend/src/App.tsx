@@ -12,17 +12,19 @@ import { StageDashboard }   from './components/stages/StageDashboard/StageDashbo
 import './App.css';
 
 export default function App() {
-  const [stage, setStage]   = useState<Stage>('idle');
-  const [result, setResult] = useState<ClassificationResult | null>(null);
+  const [stage, setStage]         = useState<Stage>('idle');
+  const [result, setResult]       = useState<ClassificationResult | null>(null);
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
 
   const handleResult = (data: ClassificationResult) => {
     setResult(data);
-    setStage('result');
+    // Stage stays on 'processing' — user must confirm to continue
   };
 
   const { startRecording, stream } = useAudioRecorder({
     setStage,
     onResult: handleResult,
+    onAudioBlob: setAudioBlob,
   });
 
   useEffect(() => {
@@ -53,7 +55,13 @@ export default function App() {
       case 'recording':
         return <StageRecording stream={stream} />;
       case 'processing':
-        return <StageProcessing />;
+        return (
+          <StageProcessing
+            audioBlob={audioBlob}
+            analysisReady={result !== null}
+            onContinue={() => setStage('result')}
+          />
+        );
       case 'result':
         return result ? (
           <StageResult

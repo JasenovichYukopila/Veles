@@ -6,6 +6,7 @@ import { RECORDING_DURATION_MS } from '../constants';
 interface UseAudioRecorderProps {
   setStage: (stage: Stage) => void;
   onResult: (result: ClassificationResult) => void;
+  onAudioBlob?: (blob: Blob) => void;
 }
 
 interface UseAudioRecorderReturn {
@@ -16,6 +17,7 @@ interface UseAudioRecorderReturn {
 export function useAudioRecorder({
   setStage,
   onResult,
+  onAudioBlob,
 }: UseAudioRecorderProps): UseAudioRecorderReturn {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef        = useRef<Blob[]>([]);
@@ -64,6 +66,7 @@ export function useAudioRecorder({
 
         const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' });
         chunksRef.current = [];
+        onAudioBlob?.(audioBlob);
 
         try {
           setStage('processing');
