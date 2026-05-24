@@ -8,7 +8,7 @@ import tempfile
 import os
 import subprocess
 
-from schemas import ClassificationResponse, Genre
+from app.schemas import ClassificationResponse, Genre
 
 GENRES: list[Genre] = [
     'Clásica',
@@ -34,7 +34,7 @@ def extract_features(y: np.ndarray, sr: int) -> np.ndarray:
     stft_mag  = np.abs(librosa.stft(y))
 
     # --- 47 base features (same as extraerfeatures in ETL notebook) ---
-    tempo               = float(librosa.beat.tempo(y=y, sr=sr)[0])
+    tempo = float(librosa.feature.tempo(y=y, sr=sr)[0])
     spectral_centroid   = float(librosa.feature.spectral_centroid(y=y, sr=sr).mean())
     spectral_bandwidth  = float(librosa.feature.spectral_bandwidth(y=y, sr=sr).mean())
     rolloff             = float(librosa.feature.spectral_rolloff(y=y, sr=sr).mean())
@@ -142,11 +142,17 @@ def classify(audio_bytes: bytes) -> ClassificationResponse:
 
     try:
         t0 = time.time()
-        subprocess.run(
-            [ffmpeg_path, '-y', '-i', tmp_in_path, tmp_out_path],
-            check=True,
-            capture_output=True,
-        )
+        try:
+            subprocess.run(
+                [ffmpeg_path, '-y', '-i', tmp_in_path, tmp_out_path],
+                check=True,
+                capture_output=True,
+            )
+        except subprocess.CalledProcessError as e:
+            # Extraer el error nativo arrojado por el binario FFmpeg
+            error_details = e.stderr.decode('utf-8', errors='ignore')
+            raise RuntimeError(f"Fallo en la ejecución de ffmpeg: {error_details}")
+            
         print(f"ffmpeg: {time.time() - t0:.2f}s")
 
         t1 = time.time()
@@ -158,6 +164,7 @@ def classify(audio_bytes: bytes) -> ClassificationResponse:
         print(f"extract_features: {time.time() - t2:.2f}s")
 
     finally:
+        # Esto garantiza que la basura se limpie INCLUSO si ffmpeg o librosa fallan
         os.unlink(tmp_in_path)
         if os.path.exists(tmp_out_path):
             os.unlink(tmp_out_path)
@@ -176,17 +183,17 @@ def get_model():
     from dotenv import load_dotenv
 
     load_dotenv()
+
     login(token=os.getenv("HF_TOKEN"))
 
-    if os.path.exists("./models"):
-        shutil.rmtree("./models")
-    os.makedirs("./models")
-    
-    print("Descargando modelo desde Hugging Face...")
+    print("Sincronizando modelo desde Hugging Face...")
+
     snapshot_download(
         repo_id="F4-bit/ML-voting-classifier-UTB",
-        local_dir="./models"
+        local_dir="./models",
     )
+
+    print("[Ok] Modelo actualizado")
 
 def classify_genre(features: np.ndarray):
     global MODEL, SCALER, LABEL_ENCODER
@@ -195,10 +202,11 @@ def classify_genre(features: np.ndarray):
     X_scaled = SCALER.transform(X)
 
     pred = MODEL.predict(X_scaled)
-    genre = LABEL_ENCODER.inverse_transform(pred)[0]
+    
+    raw_genre = str(LABEL_ENCODER.inverse_transform(pred)[0])
+    genre = next((g for g in GENRES if g.lower() == raw_genre.lower()), raw_genre)
 
     confidence = None
-
     if hasattr(MODEL, "predict_proba"):
         probs = MODEL.predict_proba(X_scaled)[0]
         confidence = float(np.max(probs))
@@ -214,7 +222,7 @@ def load_model():
 
 def warmup() -> None:
     print("Calentando librosa...")
-    noise = np.random.randn(22050).astype(np.float32) * 0.01
+    noise = np.random.randn(22050 * 5).astype(np.float32)
     extract_features(noise, 22050)
     print("Librosa listo.")
     print("Cargando modelo...")

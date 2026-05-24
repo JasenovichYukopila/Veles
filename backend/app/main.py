@@ -1,5 +1,7 @@
 from contextlib import asynccontextmanager
+import traceback
 from fastapi import FastAPI, UploadFile, File, HTTPException, Query
+from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 from app.classifier import classify, warmup
 from app.dashboard import get_business_metrics, get_personal_recommendations
@@ -45,9 +47,15 @@ async def classify_audio(file: UploadFile = File(...)) -> ClassificationResponse
     audio_bytes = await file.read()
 
     try:
-        return classify(audio_bytes)
+        return await run_in_threadpool(classify, audio_bytes)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e) or repr(e))
+        print("=== ERROR CRÍTICO EN CLASIFICACIÓN ===")
+        traceback.print_exc()
+        print("======================================")
+        raise HTTPException(
+            status_code=500, 
+            detail="Error interno del servidor. Revisa la consola de Uvicorn."
+        )
 
 @app.get(
     "/dashboard/business",

@@ -30,3 +30,6 @@ CLAUDE.md
 .env
 .venv
 models/
+
+*.log
+*.pid
