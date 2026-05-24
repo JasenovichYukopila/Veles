@@ -161,9 +161,21 @@ def classify(audio_bytes: bytes) -> ClassificationResponse:
 
     return ClassificationResponse(genre=genre, confidence=confidence)
 
+def load_model():
+    from huggingface_hub import login, snapshot_download
+    from dotenv import load_dotenv
+
+    load_dotenv()
+    login(token=os.getenv("HF_TOKEN"))
+
+    snapshot_download(
+        repo_id="F4-bit/ML-voting-classifier-UTB",
+        local_dir="./models"
+    )
 
 def warmup() -> None:
     print("Calentando librosa...")
     noise = np.random.randn(22050).astype(np.float32) * 0.01
     extract_features(noise, 22050)
+    load_model()
     print("Backend listo.")
