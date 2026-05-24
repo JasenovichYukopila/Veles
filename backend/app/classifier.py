@@ -181,7 +181,8 @@ def get_model():
     if os.path.exists("./models"):
         shutil.rmtree("./models")
     os.makedirs("./models")
-
+    
+    print("Descargando modelo desde Hugging Face...")
     snapshot_download(
         repo_id="F4-bit/ML-voting-classifier-UTB",
         local_dir="./models"
@@ -215,6 +216,10 @@ def warmup() -> None:
     print("Calentando librosa...")
     noise = np.random.randn(22050).astype(np.float32) * 0.01
     extract_features(noise, 22050)
+    print("Librosa listo.")
+    print("Cargando modelo...")
     get_model()
+    print("Modelo descargado. Cargando en memoria...")
     load_model()
+    print("Modelo listo.")
     print("Backend listo.")
