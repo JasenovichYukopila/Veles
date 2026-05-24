@@ -8,7 +8,7 @@ import tempfile
 import os
 import subprocess
 
-from app.schemas import ClassificationResponse, Genre
+from schemas import ClassificationResponse, Genre
 
 GENRES: list[Genre] = [
     'Clásica',
