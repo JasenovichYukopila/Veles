@@ -62,3 +62,17 @@
   width: 100%;
   min-height: 100vh;
 }
+
+/* ─── Dashboard stage: full viewport lock ───── */
+
+.app--dashboard {
+  height: 100vh;
+  min-height: 0;
+}
+
+.app--dashboard .app__content {
+  min-height: 0;
+  height: 100%;
+  align-items: stretch;
+  justify-content: flex-start;
+}

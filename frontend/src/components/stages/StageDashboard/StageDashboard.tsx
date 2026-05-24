@@ -100,6 +100,9 @@ function BusinessView({ onBack }: BusinessViewProps) {
     const [data, setData] = useState<BusinessMetric[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
+    const [sortKey, setSortKey] = useState<SortKey>('potencial_ganancia_usd');
+    const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
     useEffect(() => {
         let cancelled = false;
@@ -119,175 +122,345 @@ function BusinessView({ onBack }: BusinessViewProps) {
     if (loading) return <DashboardLoading />;
     if (error) return <DashboardError message={error} onRetry={() => window.location.reload()} />;
 
-    // Solo géneros con datos reales del catálogo
-    const withData = data.filter((d) => d.artistas_encontrados > 0);
     const sortedByRevenue = [...data].sort((a, b) => b.potencial_ganancia_usd - a.potencial_ganancia_usd);
     const maxRevenue = Math.max(...data.map((d) => d.potencial_ganancia_usd), 1);
+    const avgRevenue = data.reduce((s, d) => s + d.potencial_ganancia_usd, 0) / (data.length || 1);
+    const selectedData = selectedGenre ? data.find((d) => d.genero === selectedGenre) : null;
 
-    return (
-        <div className="dashboard-view">
-            <div className="dashboard-view__header">
-                <button className="dashboard-view__back" onClick={onBack}>← Volver</button>
-                <div>
-                    <span className="dashboard-view__label">Dashboard Empresarial</span>
-                    <h2 className="dashboard-view__title">Métricas de Mercado</h2>
-                    <p className="dashboard-view__desc">
-                        KPIs por género para toma de decisiones comerciales
-                    </p>
-                </div>
-            </div>
+    const handleSort = (key: SortKey) => {
+        if (sortKey === key) setSortDir((d) => d === 'asc' ? 'desc' : 'asc');
+        else { setSortKey(key); setSortDir('desc'); }
+    };
 
-            {/* ── Cards: catálogo real por género ── */}
-            <div className="dashboard-business__cards">
-                {withData.map((item) => (
-                    <div key={item.genero} className="dashboard-business__card">
-                        <div className="dashboard-business__card-genre">{item.genero}</div>
-                        <div className="dashboard-business__card-metric">
-                            <span className="dashboard-business__card-value">
-                                ${(item.potencial_ganancia_usd / 1000).toFixed(0)}K
-                            </span>
-                            <span className="dashboard-business__card-label">Potencial ganancia</span>
-                        </div>
-                        <div className="dashboard-business__card-bar">
-                            <div
-                                className="dashboard-business__card-bar-fill"
-                                style={{ width: `${(item.potencial_ganancia_usd / maxRevenue) * 100}%` }}
-                            />
-                        </div>
-                        {item.porcentaje_explicitos !== null && item.porcentaje_explicitos > 0 && (
-                            <div className="dashboard-business__explicit-badge">
-                                {item.porcentaje_explicitos.toFixed(0)}% explícito
-                            </div>
-                        )}
+    const sortedData = [...data].sort((a, b) => {
+        const mult = sortDir === 'asc' ? 1 : -1;
+        const av = a[sortKey];
+        const bv = b[sortKey];
+        if (typeof av === 'string' && typeof bv === 'string') {
+            return av.localeCompare(bv) * mult;
+        }
+        if (av == null) return 1;
+        if (bv == null) return -1;
+        return ((av as number) - (bv as number)) * mult;
+    });
+
+    const rowClass = (g: string) =>
+        selectedGenre
+            ? g === selectedGenre ? 'dashboard-chart__row--focused' : 'dashboard-chart__row--unfocused'
+            : '';
+
+    const vbarClass = (g: string) =>
+        selectedGenre
+            ? g === selectedGenre ? 'dashboard-chart__vbar-group--focused' : 'dashboard-chart__vbar-group--unfocused'
+            : '';
+
+    const topGenre = sortedData[0]?.genero ?? '';
+
+    const goalData = selectedGenre
+        ? data.filter((d) => d.genero === selectedGenre)
+        : [...data].sort((a, b) => b.cumplimiento_meta_pct - a.cumplimiento_meta_pct);
+
+    const tableData = selectedGenre
+        ? sortedData.filter((d) => d.genero === selectedGenre)
+        : sortedData;
+
+return (
+        <div className="dashboard-view dashboard-view--business">
+            <div className="dashboard-business__layout">
+                <div className="dashboard-view__header">
+                    <button className="dashboard-view__back" onClick={onBack}>← Volver</button>
+                    <div>
+                        <span className="dashboard-view__label">Dashboard Empresarial</span>
+                        <h2 className="dashboard-view__title">Métricas de Mercado</h2>
                     </div>
-                ))}
-            </div>
+                </div>
 
-            {/* ── Medidor de metas ── */}
-            <div className="dashboard-business__chart">
-                <h3 className="dashboard-chart__title">Medidor de Metas — Ingresos vs Objetivo</h3>
-                <div className="dashboard-chart__table">
-                    {sortedByRevenue.map((item) => {
-                        const pct = Math.min(item.cumplimiento_meta_pct, 100);
-                        const trend = item.tendencia_crecimiento_pct;
-                        return (
-                            <div key={item.genero} className="dashboard-chart__row dashboard-chart__row--goal">
-                                <span className="dashboard-chart__row-label">{item.genero}</span>
-                                <div className="dashboard-chart__goal-body">
-                                    <div className="dashboard-chart__goal-bar-row">
-                                        <div className="dashboard-chart__bar-group">
+                {/* ── Left panel: Sidebar only ── */}
+                <div className="dashboard-business__left">
+                    <DashboardSidebar
+                        data={data}
+                        selectedGenre={selectedGenre}
+                        selectedData={selectedData}
+                        onSelect={setSelectedGenre}
+                    />
+                </div>
+
+                {/* ── Right panel ── */}
+                <div className="dashboard-business__main">
+                    {/* ── Demografía + Potencial ── */}
+                    <div className="dashboard-business__charts">
+                        <div className="dashboard-business__chart">
+                            <h3 className="dashboard-chart__title">Demografía por género</h3>
+                            <div className="dashboard-chart__table">
+                                {data.map((item) => (
+                                    <div key={item.genero} className={`dashboard-chart__row ${rowClass(item.genero)}`}>
+                                        <span className="dashboard-chart__row-label">{item.genero}</span>
+                                        <div className="dashboard-chart__row-bars">
+                                            <div className="dashboard-chart__bar-group">
+                                                <div
+                                                    className="dashboard-chart__bar dashboard-chart__bar--male"
+                                                    style={{ width: `${item.porcentaje_hombres}%` }}
+                                                />
+                                                <div
+                                                    className="dashboard-chart__bar dashboard-chart__bar--female"
+                                                    style={{ width: `${item.porcentaje_mujeres}%` }}
+                                                />
+                                            </div>
+                                            <span className="dashboard-chart__row-value">
+                                                {item.porcentaje_hombres.toFixed(0)}% / {item.porcentaje_mujeres.toFixed(0)}%
+                                            </span>
+                                        </div>
+                                        <span className="dashboard-chart__row-age">
+                                            {item.edad_promedio_oyente.toFixed(1)} a
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="dashboard-business__chart">
+                            <h3 className="dashboard-chart__title">Potencial de ganancia</h3>
+                            <div className="dashboard-chart__bars-vertical">
+                                {sortedByRevenue.map((item) => (
+                                    <div key={item.genero} className={`dashboard-chart__vbar-group ${vbarClass(item.genero)}`}>
+                                        <div className="dashboard-chart__vbar-label">{item.genero}</div>
+                                        <div className="dashboard-chart__vbar-track">
                                             <div
-                                                className="dashboard-chart__bar dashboard-chart__bar--male"
+                                                className="dashboard-chart__vbar-fill"
+                                                style={{ height: `${(item.potencial_ganancia_usd / maxRevenue) * 100}%` }}
+                                            />
+                                            <div
+                                                className="dashboard-chart__vbar-avg-line"
+                                                style={{ bottom: `${(avgRevenue / maxRevenue) * 100}%` }}
+                                            />
+                                        </div>
+                                        <span className="dashboard-chart__vbar-value">
+                                            ${(item.potencial_ganancia_usd / 1000).toFixed(0)}K
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="dashboard-chart__avg-legend">
+                                <span className="dashboard-chart__avg-line-sample" />
+                                <span>Prom: ${(avgRevenue / 1000).toFixed(0)}K</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* ── Tabla resumen ── */}
+                    <div className="dashboard-business__table-wrap">
+                        <h3 className="dashboard-chart__title">Tabla resumen por género</h3>
+                        <div className="dashboard-business__table-scroll">
+                            <table className="dashboard-business__table">
+                                <thead>
+                                    <tr>
+                                        {TABLE_COLS.map((col) => (
+                                            <th
+                                                key={col.key}
+                                                onClick={() => handleSort(col.key)}
+                                                className={`dashboard-business__th ${sortKey === col.key ? 'dashboard-business__th--active' : ''}`}
+                                            >
+                                                <span className="dashboard-business__th-inner">
+                                                    {col.label}
+                                                    {sortKey === col.key ? (
+                                                        <SortIcon dir={sortDir} />
+                                                    ) : (
+                                                        <SortNeutralIcon />
+                                                    )}
+                                                </span>
+                                            </th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {tableData.map((item) => (
+                                        <tr
+                                            key={item.genero}
+                                            className={`${item.genero === topGenre && !selectedGenre ? 'dashboard-business__tr--top' : ''} ${rowClass(item.genero)}`}
+                                        >
+                                            <td>{item.genero}</td>
+                                            <td>{item.artistas_encontrados > 0 ? item.artistas_encontrados : '—'}</td>
+                                            <td>{item.canciones_encontradas > 0 ? item.canciones_encontradas : '—'}</td>
+                                            <td>{item.duracion_promedio_min !== null ? `${item.duracion_promedio_min} min` : '—'}</td>
+                                            <td>{item.porcentaje_explicitos !== null ? `${item.porcentaje_explicitos.toFixed(0)}%` : '—'}</td>
+                                            <td>{item.edad_promedio_oyente.toFixed(1)}</td>
+                                            <td>{item.porcentaje_hombres.toFixed(0)}% / {item.porcentaje_mujeres.toFixed(0)}%</td>
+                                            <td>${item.potencial_ganancia_usd.toLocaleString()}</td>
+                                            <td>{item.cumplimiento_meta_pct.toFixed(1)}%</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {/* ── Goal meter cards row ── */}
+                    <div className="dashboard-business__goals-row">
+                        <h3 className="dashboard-chart__title dashboard-business__goals-title">Medidor de Metas</h3>
+                        <div className="dashboard-business__goals-cards">
+                            {goalData.map((item) => {
+                                const pct = Math.min(item.cumplimiento_meta_pct, 100);
+                                const trend = item.tendencia_crecimiento_pct;
+                                const dotClass =
+                                    item.cumplimiento_meta_pct >= 80 ? 'dot--green' :
+                                    item.cumplimiento_meta_pct >= 60 ? 'dot--yellow' : 'dot--red';
+                                return (
+                                    <div key={item.genero} className="dashboard-business__goal-card">
+                                        <div className="dashboard-business__goal-card-head">
+                                            <span className="dashboard-business__goal-card-genre">{item.genero}</span>
+                                            <span className={`dashboard-chart__goal-dot ${dotClass}`} />
+                                        </div>
+                                        <div className="dashboard-business__goal-card-bar-track">
+                                            <div
+                                                className="dashboard-business__goal-card-bar-fill"
                                                 style={{ width: `${pct}%` }}
                                             />
                                         </div>
-                                        <span className="dashboard-chart__goal-pct">{pct.toFixed(0)}%</span>
+                                        <div className="dashboard-business__goal-card-pct">{pct.toFixed(0)}%</div>
+                                        <div className="dashboard-business__goal-card-values">
+                                            <span>${(item.meta_ingresos_usd / 1000).toFixed(0)}K meta</span>
+                                            <span>${(item.potencial_ganancia_usd / 1000).toFixed(0)}K act.</span>
+                                        </div>
+                                        <span
+                                            className="dashboard-business__goal-card-trend"
+                                            style={{ color: trend >= 0 ? '#22c55e' : '#ef4444' }}
+                                        >
+                                            {trend >= 0 ? '↑' : '↓'} {Math.abs(trend)}%
+                                        </span>
                                     </div>
-                                    <div className="dashboard-chart__goal-labels">
-                                        <span>Meta: ${(item.meta_ingresos_usd / 1000).toFixed(0)}K</span>
-                                        <span>·</span>
-                                        <span>Actual: ${(item.potencial_ganancia_usd / 1000).toFixed(0)}K</span>
-                                    </div>
-                                </div>
-                                <span
-                                    className="dashboard-chart__row-age"
-                                    style={{ color: trend >= 0 ? '#22c55e' : '#ef4444', fontWeight: 600 }}
-                                >
-                                    {trend >= 0 ? '↑' : '↓'} {Math.abs(trend)}%
-                                </span>
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
-
-            {/* ── Demografía + barras de potencial ── */}
-            <div className="dashboard-business__charts">
-                <div className="dashboard-business__chart">
-                    <h3 className="dashboard-chart__title">Demografía por género</h3>
-                    <div className="dashboard-chart__table">
-                        {data.map((item) => (
-                            <div key={item.genero} className="dashboard-chart__row">
-                                <span className="dashboard-chart__row-label">{item.genero}</span>
-                                <div className="dashboard-chart__row-bars">
-                                    <div className="dashboard-chart__bar-group">
-                                        <div
-                                            className="dashboard-chart__bar dashboard-chart__bar--male"
-                                            style={{ width: `${item.porcentaje_hombres}%` }}
-                                            title={`Hombres: ${item.porcentaje_hombres}%`}
-                                        />
-                                        <div
-                                            className="dashboard-chart__bar dashboard-chart__bar--female"
-                                            style={{ width: `${item.porcentaje_mujeres}%` }}
-                                            title={`Mujeres: ${item.porcentaje_mujeres}%`}
-                                        />
-                                    </div>
-                                    <span className="dashboard-chart__row-value">
-                                        {item.porcentaje_hombres.toFixed(0)}% / {item.porcentaje_mujeres.toFixed(0)}%
-                                    </span>
-                                </div>
-                                <span className="dashboard-chart__row-age">
-                                    {item.edad_promedio_oyente.toFixed(1)} años
-                                </span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                <div className="dashboard-business__chart">
-                    <h3 className="dashboard-chart__title">Potencial de ganancia</h3>
-                    <div className="dashboard-chart__bars-vertical">
-                        {sortedByRevenue.map((item) => (
-                            <div key={item.genero} className="dashboard-chart__vbar-group">
-                                <div className="dashboard-chart__vbar-label">{item.genero}</div>
-                                <div className="dashboard-chart__vbar-track">
-                                    <div
-                                        className="dashboard-chart__vbar-fill"
-                                        style={{ height: `${(item.potencial_ganancia_usd / maxRevenue) * 100}%` }}
-                                    />
-                                </div>
-                                <span className="dashboard-chart__vbar-value">
-                                    ${(item.potencial_ganancia_usd / 1000).toFixed(0)}K
-                                </span>
-                            </div>
-                        ))}
+                                );
+                            })}
+                        </div>
                     </div>
                 </div>
             </div>
+        </div>
+    );
+}
 
-            {/* ── Tabla resumen ── */}
-            <div className="dashboard-business__table-wrap">
-                <h3 className="dashboard-chart__title">Tabla resumen por género</h3>
-                <div className="dashboard-business__table-scroll">
-                    <table className="dashboard-business__table">
-                        <thead>
-                            <tr>
-                                <th>Género</th>
-                                <th>Artistas</th>
-                                <th>Canciones</th>
-                                <th>Duración prom.</th>
-                                <th>% Explícito</th>
-                                <th>Edad prom.</th>
-                                <th>% H / M</th>
-                                <th>Potencial</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {data.map((item) => (
-                                <tr key={item.genero}>
-                                    <td>{item.genero}</td>
-                                    <td>{item.artistas_encontrados > 0 ? item.artistas_encontrados : '—'}</td>
-                                    <td>{item.canciones_encontradas > 0 ? item.canciones_encontradas : '—'}</td>
-                                    <td>{item.duracion_promedio_min !== null ? `${item.duracion_promedio_min} min` : '—'}</td>
-                                    <td>{item.porcentaje_explicitos !== null ? `${item.porcentaje_explicitos.toFixed(0)}%` : '—'}</td>
-                                    <td>{item.edad_promedio_oyente.toFixed(1)}</td>
-                                    <td>{item.porcentaje_hombres.toFixed(0)}% / {item.porcentaje_mujeres.toFixed(0)}%</td>
-                                    <td>${item.potencial_ganancia_usd.toLocaleString()}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+type SortKey = 'genero' | 'artistas_encontrados' | 'canciones_encontradas' | 'duracion_promedio_min' | 'porcentaje_explicitos' | 'edad_promedio_oyente' | 'porcentaje_hombres' | 'porcentaje_mujeres' | 'potencial_ganancia_usd' | 'cumplimiento_meta_pct';
+
+const TABLE_COLS: { key: SortKey; label: string }[] = [
+    { key: 'genero', label: 'Género' },
+    { key: 'artistas_encontrados', label: 'Artistas' },
+    { key: 'canciones_encontradas', label: 'Canciones' },
+    { key: 'duracion_promedio_min', label: 'Duración prom.' },
+    { key: 'porcentaje_explicitos', label: '% Explícito' },
+    { key: 'edad_promedio_oyente', label: 'Edad prom.' },
+    { key: 'porcentaje_hombres', label: '% H / M' },
+    { key: 'potencial_ganancia_usd', label: 'Potencial' },
+    { key: 'cumplimiento_meta_pct', label: 'Cumplimiento %' },
+];
+
+/* ─── Dashboard Sidebar ──────────────────────── */
+
+interface DashboardSidebarProps {
+    data: BusinessMetric[];
+    selectedGenre: string | null;
+    selectedData: BusinessMetric | null | undefined;
+    onSelect: (genre: string | null) => void;
+}
+
+function DashboardSidebar({ data, selectedGenre, selectedData, onSelect }: DashboardSidebarProps) {
+    return (
+        <div className="dashboard-sidebar">
+            <button
+                className={`dashboard-sidebar__btn ${selectedGenre === null ? 'dashboard-sidebar__btn--active' : ''}`}
+                onClick={() => onSelect(null)}
+            >
+                <span className="dashboard-sidebar__btn-name">Todos</span>
+                <span className="dashboard-sidebar__btn-count">{data.length} géneros</span>
+            </button>
+
+            <div className="dashboard-sidebar__divider" />
+
+            {data.map((item) => (
+                <div key={item.genero} className="dashboard-sidebar__genre-group">
+                    <button
+                        className={`dashboard-sidebar__btn ${selectedGenre === item.genero ? 'dashboard-sidebar__btn--active' : ''}`}
+                        onClick={() => onSelect(item.genero === selectedGenre ? null : item.genero)}
+                    >
+                        <span className="dashboard-sidebar__btn-name">{item.genero}</span>
+                        <span className="dashboard-sidebar__btn-mini">
+                            ${(item.potencial_ganancia_usd / 1000).toFixed(0)}K
+                        </span>
+                    </button>
+                    {selectedGenre === item.genero && selectedData && (
+                        <GenreSidebarPanel data={selectedData} />
+                    )}
                 </div>
+            ))}
+        </div>
+    );
+}
+
+/* ─── Genre Sidebar Panel ───────────────────── */
+
+interface GenreSidebarPanelProps {
+    data: BusinessMetric;
+}
+
+function GenreSidebarPanel({ data }: GenreSidebarPanelProps) {
+    const pct = Math.min(data.cumplimiento_meta_pct, 100);
+    const trend = data.tendencia_crecimiento_pct;
+    const dotClass =
+        data.cumplimiento_meta_pct >= 80 ? 'dot--green' :
+        data.cumplimiento_meta_pct >= 60 ? 'dot--yellow' : 'dot--red';
+
+    return (
+        <div className="dashboard-sidebar__panel">
+            <div className="dashboard-sidebar__panel-grid">
+                <div className="dashboard-sidebar__panel-metric">
+                    <span className="dashboard-sidebar__panel-label">Potencial</span>
+                    <span className="dashboard-sidebar__panel-value">${(data.potencial_ganancia_usd / 1000).toFixed(0)}K</span>
+                </div>
+                <div className="dashboard-sidebar__panel-metric">
+                    <span className="dashboard-sidebar__panel-label">Meta</span>
+                    <span className="dashboard-sidebar__panel-value">${(data.meta_ingresos_usd / 1000).toFixed(0)}K</span>
+                </div>
+                <div className="dashboard-sidebar__panel-metric">
+                    <span className="dashboard-sidebar__panel-label">Cumpl.</span>
+                    <span className="dashboard-sidebar__panel-value dashboard-sidebar__panel-value--accent">
+                        <span className={`dashboard-chart__goal-dot ${dotClass}`} />
+                        {pct.toFixed(0)}%
+                    </span>
+                </div>
+                <div className="dashboard-sidebar__panel-metric">
+                    <span className="dashboard-sidebar__panel-label">Tendencia</span>
+                    <span className="dashboard-sidebar__panel-value" style={{ color: trend >= 0 ? '#22c55e' : '#ef4444' }}>
+                        {trend >= 0 ? '↑' : '↓'} {Math.abs(trend)}%
+                    </span>
+                </div>
+                <div className="dashboard-sidebar__panel-metric">
+                    <span className="dashboard-sidebar__panel-label">Edad</span>
+                    <span className="dashboard-sidebar__panel-value">{data.edad_promedio_oyente.toFixed(0)} años</span>
+                </div>
+                <div className="dashboard-sidebar__panel-metric">
+                    <span className="dashboard-sidebar__panel-label">H / M</span>
+                    <span className="dashboard-sidebar__panel-value">{data.porcentaje_hombres.toFixed(0)}% / {data.porcentaje_mujeres.toFixed(0)}%</span>
+                </div>
+                <div className="dashboard-sidebar__panel-metric">
+                    <span className="dashboard-sidebar__panel-label">Artistas</span>
+                    <span className="dashboard-sidebar__panel-value">{data.artistas_encontrados}</span>
+                </div>
+                <div className="dashboard-sidebar__panel-metric">
+                    <span className="dashboard-sidebar__panel-label">Canciones</span>
+                    <span className="dashboard-sidebar__panel-value">{data.canciones_encontradas}</span>
+                </div>
+                <div className="dashboard-sidebar__panel-metric">
+                    <span className="dashboard-sidebar__panel-label">Duración</span>
+                    <span className="dashboard-sidebar__panel-value">{data.duracion_promedio_min !== null ? `${data.duracion_promedio_min} min` : '—'}</span>
+                </div>
+                <div className="dashboard-sidebar__panel-metric">
+                    <span className="dashboard-sidebar__panel-label">Explícito</span>
+                    <span className="dashboard-sidebar__panel-value">{data.porcentaje_explicitos !== null ? `${data.porcentaje_explicitos.toFixed(0)}%` : '0%'}</span>
+                </div>
+            </div>
+            <div className="dashboard-sidebar__panel-bar-track">
+                <div
+                    className="dashboard-sidebar__panel-bar-fill"
+                    style={{ width: `${pct}%` }}
+                />
             </div>
         </div>
     );
@@ -464,6 +637,25 @@ function PersonalIcon() {
             <path d="M9 18V5l12-2v13" />
             <circle cx="6" cy="18" r="3" />
             <circle cx="18" cy="16" r="3" />
+        </svg>
+    );
+}
+
+function SortIcon({ dir }: { dir: 'asc' | 'desc' }) {
+    return (
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor" style={{ opacity: 0.7, flexShrink: 0 }}>
+            {dir === 'asc'
+                ? <path d="M5 2L8 7H2L5 2Z" />
+                : <path d="M5 8L2 3H8L5 8Z" />
+            }
+        </svg>
+    );
+}
+
+function SortNeutralIcon() {
+    return (
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor" style={{ opacity: 0.25, flexShrink: 0 }}>
+            <path d="M5 1L7.5 4.5H2.5L5 1Z M5 9L2.5 5.5H7.5L5 9Z" />
         </svg>
     );
 }
