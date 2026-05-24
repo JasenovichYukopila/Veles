@@ -1,5 +1,7 @@
 import random
 import shutil
+import joblib
+import joblib
 import numpy as np
 import librosa
 import tempfile
@@ -17,6 +19,10 @@ GENRES: list[Genre] = [
     'Rock',
     'Vallenato',
 ]
+
+MODEL = None
+SCALER = None
+LABEL_ENCODER = None
 
 
 def extract_features(y: np.ndarray, sr: int) -> np.ndarray:
@@ -148,7 +154,7 @@ def classify(audio_bytes: bytes) -> ClassificationResponse:
         print(f"librosa.load: {time.time() - t1:.2f}s")
 
         t2 = time.time()
-        _ = extract_features(audio, sr)
+        features = extract_features(audio, sr)
         print(f"extract_features: {time.time() - t2:.2f}s")
 
     finally:
@@ -156,26 +162,59 @@ def classify(audio_bytes: bytes) -> ClassificationResponse:
         if os.path.exists(tmp_out_path):
             os.unlink(tmp_out_path)
 
-    genre      = random.choice(GENRES)
-    confidence = round(random.uniform(0.60, 0.95), 2)
+    genre, confidence = classify_genre(features)
+
+    if confidence is None:
+        confidence = 0.95
+
+    confidence = round(confidence, 2)
 
     return ClassificationResponse(genre=genre, confidence=confidence)
 
-def load_model():
+def get_model():
     from huggingface_hub import login, snapshot_download
     from dotenv import load_dotenv
 
     load_dotenv()
     login(token=os.getenv("HF_TOKEN"))
 
+    if os.path.exists("./models"):
+        shutil.rmtree("./models")
+    os.makedirs("./models")
+
     snapshot_download(
         repo_id="F4-bit/ML-voting-classifier-UTB",
         local_dir="./models"
     )
 
+def classify_genre(features: np.ndarray):
+    global MODEL, SCALER, LABEL_ENCODER
+
+    X = features.reshape(1, -1)
+    X_scaled = SCALER.transform(X)
+
+    pred = MODEL.predict(X_scaled)
+    genre = LABEL_ENCODER.inverse_transform(pred)[0]
+
+    confidence = None
+
+    if hasattr(MODEL, "predict_proba"):
+        probs = MODEL.predict_proba(X_scaled)[0]
+        confidence = float(np.max(probs))
+
+    return genre, confidence
+
+def load_model():
+    global MODEL, SCALER, LABEL_ENCODER
+
+    MODEL = joblib.load("models/best_model.pkl")
+    SCALER = joblib.load("models/scaler.pkl")
+    LABEL_ENCODER = joblib.load("models/label_encoder.pkl")
+
 def warmup() -> None:
     print("Calentando librosa...")
     noise = np.random.randn(22050).astype(np.float32) * 0.01
     extract_features(noise, 22050)
+    get_model()
     load_model()
     print("Backend listo.")
