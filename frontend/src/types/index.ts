@@ -8,6 +8,7 @@ export type Genre =
     | 'Vallenato';
 
 export type Stage =
+    | 'landing'
     | 'menu'
     | 'idle'
     | 'recording'

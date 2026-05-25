@@ -1,202 +1,326 @@
-.stage-menu {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    min-height: 100vh;
-    padding: 2rem;
+/* =========================
+   STAGE MENU - LOS CANALES ACÚSTICOS
+========================= */
+
+.menu-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background-color: #050308;
+  color: #ffffff;
+  font-family: Inter, "SF Pro Display", sans-serif;
+  overflow: hidden;
 }
 
-.stage-menu__content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3rem;
-    max-width: 560px;
-    width: 100%;
-    animation: stageMenuFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+.fade-in {
+  animation: stage-enter 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
-@keyframes stageMenuFadeIn {
-    from { opacity: 0; transform: translateY(16px); }
-    to   { opacity: 1; transform: translateY(0);    }
+@keyframes stage-enter {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-.stage-menu__header {
-    text-align: center;
+/* =========================
+   BOTÓN DE RETROCESO
+========================= */
+.back-button {
+  position: absolute;
+  top: 5vh;
+  left: 3vw;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: transparent;
+  border: none;
+  color: #8c85a6;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: color 0.3s ease, transform 0.3s ease;
+  padding: 10px;
 }
 
-.stage-menu__title {
-    font-size: clamp(3rem, 8vw, 6rem);
-    font-weight: 800;
-    letter-spacing: -0.04em;
-    background: linear-gradient(135deg, #F0F0F5 0%, #6060A0 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    line-height: 1;
+.back-button svg {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.3s ease;
 }
 
-.stage-menu__subtitle {
-    margin-top: 0.75rem;
-    font-size: 0.75rem;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--color-text-muted);
+.back-button:hover {
+  color: #ffffff;
 }
 
-.stage-menu__cards {
-    display: flex;
-    flex-direction: row;
-    gap: 1.25rem;
-    width: 100%;
+.back-button:hover svg {
+  transform: translateX(-4px);
 }
 
-/* ─── Card base ────────────────────────────── */
+/* =========================
+   LAYOUT DE CANALES (Split Screen)
+========================= */
+.menu-split-layout {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+}
 
-.stage-menu__card {
+.center-horizon-divider {
+  width: 1px;
+  height: 100vh;
+  background: linear-gradient(180deg, transparent, rgba(140, 100, 255, 0.2) 20%, rgba(160, 120, 255, 0.5) 50%, rgba(140, 100, 255, 0.2) 80%, transparent);
+  z-index: 10;
+}
+
+.menu-channel {
     position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
-    padding: 2rem;
-    border-radius: var(--radius-md);
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
     flex: 1;
-    aspect-ratio: 1;
-    max-height: 280px;
-    transition: background 0.25s ease,
-                border-color 0.25s ease,
-                transform 0.25s ease,
-                box-shadow 0.25s ease;
-    cursor: pointer;
-    color: inherit;
-    font-family: inherit;
-    overflow: hidden;
-}
-
-/* ─── Card: classify (purple) ────────────────── */
-
-.stage-menu__card--classify {
-    --card-color: #8B8BC0;
-    --card-rgb: 139, 139, 192;
-}
-
-.stage-menu__card--classify::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(
-        circle at 50% 40%,
-        rgba(var(--card-rgb), 0.12) 0%,
-        transparent 60%
-    );
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    pointer-events: none;
-}
-
-.stage-menu__card--classify:hover {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(var(--card-rgb), 0.5);
-    transform: translateY(-4px);
-    box-shadow: 0 12px 40px rgba(var(--card-rgb), 0.25);
-}
-
-.stage-menu__card--classify:hover::before {
-    opacity: 1;
-}
-
-/* ─── Card: dashboard (indigo) ───────────────── */
-
-.stage-menu__card--dashboard {
-    --card-color: #8B8BC0;
-    --card-rgb: 139, 139, 192;
-}
-
-.stage-menu__card--dashboard::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(
-        circle at 50% 40%,
-        rgba(var(--card-rgb), 0.12) 0%,
-        transparent 60%
-    );
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    pointer-events: none;
-}
-
-.stage-menu__card--dashboard:hover {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(var(--card-rgb), 0.5);
-    transform: translateY(-4px);
-    box-shadow: 0 12px 40px rgba(var(--card-rgb), 0.25);
-}
-
-.stage-menu__card--dashboard:hover::before {
-    opacity: 1;
-}
-
-/* ─── Icon ───────────────────────────────────── */
-
-.stage-menu__card-icon {
-    position: relative;
-    z-index: 1;
-    width: 80px;
-    height: 80px;
-    border-radius: var(--radius-full);
-    background: linear-gradient(135deg, #F0F0F5 0%, #6060A0 100%);
-    color: #F0F0F5;
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
-    transition: transform 0.25s ease,
-                background 0.25s ease,
-                box-shadow 0.25s ease;
+    cursor: pointer;
+    transition: background-color 0.5s ease;
+    overflow: hidden;
+    background-color: transparent;
+    will-change: transform;
 }
 
-.stage-menu__card:hover .stage-menu__card-icon {
-    transform: scale(1.08);
-    background: linear-gradient(135deg, #F8F8FC 0%, #7070B8 100%);
-    box-shadow: 0 0 32px rgba(139, 139, 192, 0.3);
+/* Expansión inmersiva al pasar el mouse */
+.menu-channel:hover {
+    background-color: rgba(65, 40, 110, 0.05);
 }
 
-/* ─── Label ──────────────────────────────────── */
+.menu-channel::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.02);
+    transform: scaleX(1);
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    transform-origin: center;
+    z-index: 0;
+  }
+  
+.menu-channel:hover::before {
+    transform: scaleX(1.1); /* Efecto de expansión sin mover el contenido */
+}
 
-.stage-menu__card-label {
+.channel-left:hover {
+  background-color: rgba(65, 40, 110, 0.05);
+}
+
+.channel-right:hover {
+  background-color: rgba(40, 45, 110, 0.05);
+}
+
+/* =========================
+   FONDOS ANIMADOS (Efectos Visuales)
+========================= */
+.channel-bg-fx {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.15;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+
+.menu-channel:hover .channel-bg-fx {
+  opacity: 0.6;
+}
+
+/* Efecto Canal 1: Ondas Espectrales (Inferencia) */
+.spectral-waves {
+  position: absolute;
+  bottom: -10%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  width: 100%;
+  height: 60vh;
+  opacity: 0.3;
+}
+
+.s-wave {
+  flex: 1;
+  background: linear-gradient(0deg, rgba(160, 130, 255, 0.8) 0%, transparent 100%);
+  border-radius: 4px 4px 0 0;
+  animation: spectral-pulse 2s infinite alternate ease-in-out;
+}
+
+/* Diferentes alturas y ritmos para las ondas */
+.w-1 { height: 20%; animation-delay: 0.1s; } .w-2 { height: 40%; animation-delay: 0.3s; }
+.w-3 { height: 70%; animation-delay: 0.0s; } .w-4 { height: 30%; animation-delay: 0.5s; }
+.w-5 { height: 90%; animation-delay: 0.2s; } .w-6 { height: 50%; animation-delay: 0.4s; }
+.w-7 { height: 80%; animation-delay: 0.1s; } .w-8 { height: 25%; animation-delay: 0.6s; }
+.w-9 { height: 60%; animation-delay: 0.3s; } .w-10 { height: 45%; animation-delay: 0.0s; }
+.w-11 { height: 85%; animation-delay: 0.4s; } .w-12 { height: 35%; animation-delay: 0.2s; }
+
+@keyframes spectral-pulse {
+  0% { transform: scaleY(0.4); opacity: 0.2; }
+  100% { transform: scaleY(1); opacity: 1; }
+}
+
+/* Efecto Canal 2: Matriz Geométrica (Dashboard) */
+.data-matrix-grid {
+  width: 100%;
+  height: 100%;
+  background-image: radial-gradient(rgba(140, 150, 255, 0.4) 1.5px, transparent 1.5px);
+  background-size: 35px 35px;
+  opacity: 0.4;
+  mask-image: radial-gradient(circle at center, black 0%, transparent 70%);
+  -webkit-mask-image: radial-gradient(circle at center, black 0%, transparent 70%);
+  transform: scale(1.2);
+  transition: transform 10s linear;
+}
+
+.channel-right:hover .data-matrix-grid {
+  transform: scale(1);
+}
+
+/* =========================
+   CONTENIDO DE LOS CANALES
+========================= */
+.channel-content {
     position: relative;
-    z-index: 1;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--color-text-primary);
-    letter-spacing: 0.02em;
-    transition: color 0.25s ease;
+    z-index: 5;
+    width: 60%;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    /* Esto asegura que el contenido no "tiemble" */
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  
+  .menu-channel:hover .channel-content {
+    transform: scale(1.02); 
+  }
+
+.channel-header {
+  margin-bottom: 2vh;
 }
 
-.stage-menu__card:hover .stage-menu__card-label {
-    color: var(--card-color);
+.channel-number {
+  font-size: 0.8rem;
+  letter-spacing: 0.3em;
+  font-weight: 600;
+  color: #8c64ff;
 }
 
-/* ─── Mobile ─────────────────────────────────── */
+.channel-title {
+  font-size: clamp(3rem, 5vw, 5rem);
+  font-weight: 800;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  margin: 0 0 2vh 0;
+  background: linear-gradient(180deg, #ffffff 0%, #d2ccf0 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  transition: transform 0.4s ease;
+}
 
-@media (max-width: 600px) {
-    .stage-menu__cards {
-        flex-direction: column;
-        align-items: center;
-    }
+.channel-desc {
+  font-size: 1rem;
+  font-weight: 300;
+  line-height: 1.6;
+  color: #9c94b0;
+  margin: 0 0 5vh 0;
+  opacity: 0.8;
+  transition: opacity 0.4s ease;
+}
 
-    .stage-menu__card {
-        width: 100%;
-        max-width: 260px;
-        aspect-ratio: auto;
-        min-height: 200px;
-    }
+.menu-channel:hover .channel-title {
+  transform: translateX(10px);
+}
+
+.menu-channel:hover .channel-desc {
+  opacity: 1;
+  color: #ffffff;
+}
+
+/* =========================
+   BOTONES DE ACCIÓN (Llamados a la Acción)
+========================= */
+.channel-action {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  color: #ffffff;
+}
+
+.action-text {
+  font-size: 0.85rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  font-weight: 500;
+  opacity: 0.6;
+  transition: opacity 0.3s ease;
+}
+
+.action-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+/* Animación específica para el icono del micrófono (Inferencia) */
+.recording-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #ff3366;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.channel-left:hover .recording-dot {
+  box-shadow: 0 0 0 4px rgba(255, 51, 102, 0.2);
+  animation: rec-pulse 1.5s infinite;
+}
+
+@keyframes rec-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
+/* Icono Dashboard */
+.static-chart svg {
+  width: 16px;
+  height: 16px;
+  color: #a28dff;
+}
+
+.menu-channel:hover .action-text {
+  opacity: 1;
+}
+
+.menu-channel:hover .action-icon {
+  background: rgba(140, 100, 255, 0.15);
+  border-color: rgba(140, 100, 255, 0.4);
+  transform: translateX(10px);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .menu-split-layout {
+    flex-direction: column;
+  }
+  .center-horizon-divider {
+    width: 100vw;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(140, 100, 255, 0.2) 20%, rgba(160, 120, 255, 0.5) 50%, rgba(140, 100, 255, 0.2) 80%, transparent);
+  }
+  .channel-content {
+    width: 80%;
+  }
 }

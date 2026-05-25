@@ -3,6 +3,7 @@ import type { Stage, ClassificationResult } from './types';
 import { GENRE_INFO } from './constants';
 import { useAudioRecorder } from './hooks/useAudioRecorder';
 import { ProgressBar }      from './components/ProgressBar/ProgressBar';
+import StageLanding      from './components/stages/StageLanding/StageLanding';
 import { StageMenu }        from './components/stages/StageMenu/StageMenu';
 import { StageIdle }        from './components/stages/StageIdle/StageIdle';
 import { StageRecording }   from './components/stages/StageRecording/StageRecording';
@@ -13,7 +14,7 @@ import { StageDashboard }   from './components/stages/StageDashboard/StageDashbo
 import './App.css';
 
 export default function App() {
-  const [stage, setStage]         = useState<Stage>('menu');
+  const [stage, setStage]         = useState<Stage>('landing');
   const [result, setResult]       = useState<ClassificationResult | null>(null);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
 
@@ -46,19 +47,22 @@ export default function App() {
 
   const handleReset = () => {
     setResult(null);
-    setAudioBlob(null);
-    setStage('menu');
+      setAudioBlob(null);
+      setStage('menu');
   };
 
-  const showProgressBar = stage !== 'menu' && stage !== 'dashboard';
+  const showProgressBar = stage !== 'landing' && stage !== 'menu' && stage !== 'dashboard';
 
   const renderStage = () => {
     switch (stage) {
+      case 'landing':
+        return <StageLanding onContinue={() => setStage('menu')} />;
       case 'menu':
         return (
           <StageMenu
             onClassify={() => setStage('idle')}
             onDashboard={() => setStage('dashboard')}
+            onBack={() => setStage('landing')}
           />
         );
       case 'idle':
