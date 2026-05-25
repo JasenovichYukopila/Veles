@@ -83,8 +83,8 @@
 /* ─── Card: classify (purple) ────────────────── */
 
 .stage-menu__card--classify {
-    --card-color: #7C3AED;
-    --card-rgb: 124, 58, 237;
+    --card-color: #8B8BC0;
+    --card-rgb: 139, 139, 192;
 }
 
 .stage-menu__card--classify::before {
@@ -115,8 +115,8 @@
 /* ─── Card: dashboard (indigo) ───────────────── */
 
 .stage-menu__card--dashboard {
-    --card-color: #818CF8;
-    --card-rgb: 129, 140, 248;
+    --card-color: #8B8BC0;
+    --card-rgb: 139, 139, 192;
 }
 
 .stage-menu__card--dashboard::before {
@@ -152,8 +152,8 @@
     width: 80px;
     height: 80px;
     border-radius: var(--radius-full);
-    background: rgba(var(--card-rgb), 0.15);
-    color: var(--card-color);
+    background: linear-gradient(135deg, #F0F0F5 0%, #6060A0 100%);
+    color: #F0F0F5;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -165,8 +165,8 @@
 
 .stage-menu__card:hover .stage-menu__card-icon {
     transform: scale(1.08);
-    background: rgba(var(--card-rgb), 0.25);
-    box-shadow: 0 0 32px rgba(var(--card-rgb), 0.35);
+    background: linear-gradient(135deg, #F8F8FC 0%, #7070B8 100%);
+    box-shadow: 0 0 32px rgba(139, 139, 192, 0.3);
 }
 
 /* ─── Label ──────────────────────────────────── */

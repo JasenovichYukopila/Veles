@@ -73,7 +73,7 @@ export function StageDetail({ result, onReset }: StageDetailProps) {
                 {artists.map(([artistName, items]) => {
                   const first = items[0];
                   return (
-                    <div key={artistName} className="stage-detail__spotify-artist">
+                    <div key={artistName} className="stage-detail__spotify-artist" onClick={() => window.open(`https://open.spotify.com/artist/${first.artista_id}`, '_blank')}>
                       <div className="stage-detail__spotify-artist-img">
                         {first.imagen_artista ? (
                           <img src={first.imagen_artista} alt={artistName} loading="lazy" />
