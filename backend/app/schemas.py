@@ -31,6 +31,10 @@ class BusinessMetricItem(BaseModel):
     meta_ingresos_usd: int = 0
     cumplimiento_meta_pct: float = 0
     tendencia_crecimiento_pct: float = 0
+    score_inversion: int = 0
+    riesgo_inversion: str = "Medio"
+    inversion_recomendada_usd: int = 0
+    roi_estimado_pct: float = 0.0
 
 class PersonalRecommendationItem(BaseModel):
     genero: str = ''

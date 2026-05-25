@@ -104,6 +104,56 @@ function DashboardError({ message, onRetry }: DashboardErrorProps) {
     );
 }
 
+/* ─── Insights Banner ────────────────────────── */
+
+function DashboardInsights({ data, selectedGenre }: { data: BusinessMetric[], selectedGenre: string | null }) {
+    if (data.length === 0) return null;
+
+    if (selectedGenre) {
+        const d = data.find(i => i.genero === selectedGenre);
+        if (!d) return null;
+
+        const roi = d.roi_estimado_pct?.toFixed(1);
+        const trend = d.tendencia_crecimiento_pct;
+        const explicit = d.porcentaje_explicitos;
+
+        const insights: Record<string, string> = {
+            'Pop': `<strong>${d.genero}</strong> es un mercado maduro y de bajo riesgo con un potencial de <strong>$${(d.potencial_ganancia_usd / 1000).toFixed(0)}K</strong>, un ROI proyectado del <strong>${roi}%</strong> y una audiencia mayoritariamente femenina (${d.porcentaje_mujeres.toFixed(0)}%) con un promedio de ${d.edad_promedio_oyente.toFixed(0)} años.`,
+            'Hip-Hop': `<strong>${d.genero}</strong> representa la mayor oportunidad de expansión con un crecimiento del <strong>${trend}%</strong> anual, a pesar de tener el contenido más explícito del catálogo (<strong>${explicit?.toFixed(0)}%</strong>).`,
+            'Vallenato': `<strong>${d.genero}</strong> destaca como un mercado local de alta fidelidad y bajo riesgo, con un crecimiento saludable del <strong>${trend}%</strong> y un catálogo <strong>100% libre de contenido explícito</strong>, ideal para marcas tradicionales.`,
+            'Electrónica': `<strong>${d.genero}</strong> muestra un equilibrio sólido entre riesgo y retorno, con un potencial de <strong>$${(d.potencial_ganancia_usd / 1000).toFixed(0)}K</strong> y una audiencia joven de ${d.edad_promedio_oyente.toFixed(0)} años.`,
+            'Rock': `<strong>${d.genero}</strong> mantiene un volumen de ingresos alto, aunque su tendencia es ligeramente negativa (<strong>${trend}%</strong>), sugiriendo la necesidad de optimizar el catálogo actual.`,
+            'Clásica': `<strong>${d.genero}</strong> es un mercado estable, de riesgo medio y baja volatilidad, con una audiencia premium de edad promedio de ${d.edad_promedio_oyente.toFixed(0)} años.`,
+            'Jazz': `<strong>${d.genero}</strong> es un nicho especializado con riesgo elevado debido a tendencias decrecientes, pero mantiene una base leal de oyentes adultos.`,
+        };
+
+        return (
+            <div className="dashboard-insights">
+                <div className="dashboard-insights__content">
+                    <span className="dashboard-insights__label">Análisis Estratégico</span>
+                    <p className="dashboard-insights__text" dangerouslySetInnerHTML={{ __html: insights[d.genero] || `Análisis detallado para el género ${d.genero}.` }} />
+                </div>
+            </div>
+        );
+    }
+
+    const topRevenue = [...data].sort((a, b) => b.potencial_ganancia_usd - a.potencial_ganancia_usd)[0];
+    const topGrowth = [...data].sort((a, b) => b.tendencia_crecimiento_pct - a.tendencia_crecimiento_pct)[0];
+
+    return (
+        <div className="dashboard-insights">
+            <div className="dashboard-insights__content">
+                <span className="dashboard-insights__label">Vista General del Mercado</span>
+                <p className="dashboard-insights__text">
+                    <strong>{topRevenue.genero}</strong> lidera el potencial de ingresos con <strong>${(topRevenue.potencial_ganancia_usd / 1000).toFixed(0)}K</strong> 
+                    ({topRevenue.cumplimiento_meta_pct.toFixed(0)}% de meta), mientras que <strong>{topGrowth.genero}</strong> es la mayor 
+                    oportunidad de expansión con un crecimiento proyectado del <strong>{topGrowth.tendencia_crecimiento_pct}%</strong> anual.
+                </p>
+            </div>
+        </div>
+    );
+}
+
 /* ─── Business View ──────────────────────────── */
 
 interface BusinessViewProps {
@@ -178,88 +228,91 @@ function BusinessView({ onBack }: BusinessViewProps) {
         ? sortedData.filter((d) => d.genero === selectedGenre)
         : sortedData;
 
-return (
-        <div className="dashboard-view dashboard-view--business">
-            <div className="dashboard-business__layout">
-                <div className="dashboard-view__header">
-                    <button className="dashboard-view__back" onClick={onBack}>← Volver</button>
-                    <div>
-                        <span className="dashboard-view__label">Dashboard Empresarial</span>
-                        <h2 className="dashboard-view__title">Métricas de Mercado</h2>
+        return (
+            <div className="dashboard-view dashboard-view--business">
+                <div className="dashboard-business__layout">
+                    <div className="dashboard-view__header">
+                        <button className="dashboard-view__back" onClick={onBack}>← Volver</button>
+                        <div>
+                            <span className="dashboard-view__label">Dashboard Empresarial</span>
+                            <h2 className="dashboard-view__title">Métricas de Mercado</h2>
+                        </div>
                     </div>
-                </div>
 
-                {/* ── Left panel: Sidebar only ── */}
-                <div className="dashboard-business__left">
-                    <DashboardSidebar
-                        data={data}
-                        selectedGenre={selectedGenre}
-                        selectedData={selectedData}
-                        onSelect={setSelectedGenre}
-                    />
-                </div>
+                    <DashboardInsights data={data} selectedGenre={selectedGenre} />
 
-                {/* ── Right panel ── */}
-                <div className="dashboard-business__main">
-                    {/* ── Demografía + Potencial ── */}
-                    <div className="dashboard-business__charts">
-                        <div className="dashboard-business__chart">
-                            <h3 className="dashboard-chart__title">Demografía por género</h3>
-                            <div className="dashboard-chart__table">
-                                {data.map((item) => (
-                                    <div key={item.genero} className={`dashboard-chart__row ${rowClass(item.genero)}`}>
-                                        <span className="dashboard-chart__row-label">{item.genero}</span>
-                                        <div className="dashboard-chart__row-bars">
-                                            <div className="dashboard-chart__bar-group">
+                    {/* ── Left panel: Sidebar only ── */}
+                    <div className="dashboard-business__left">
+                        <DashboardSidebar
+                            data={data}
+                            selectedGenre={selectedGenre}
+                            selectedData={selectedData}
+                            onSelect={setSelectedGenre}
+                        />
+                    </div>
+
+                    {/* ── Right panel ── */}
+                    <div className="dashboard-business__main">
+                        {/* ── Potencial + Demografía ── */}
+                        <div className="dashboard-business__charts">
+                            <div className="dashboard-business__chart">
+                                <h3 className="dashboard-chart__title">Potencial de ganancia</h3>
+                                <div className="dashboard-chart__bars-vertical">
+                                    {sortedByRevenue.map((item) => (
+                                        <div key={item.genero} className={`dashboard-chart__vbar-group ${vbarClass(item.genero)}`}>
+                                            <div className="dashboard-chart__vbar-label">{item.genero}</div>
+                                            <div className="dashboard-chart__vbar-track">
                                                 <div
-                                                    className="dashboard-chart__bar dashboard-chart__bar--male"
-                                                    style={{ width: `${item.porcentaje_hombres}%` }}
+                                                    className="dashboard-chart__vbar-fill"
+                                                    style={{ height: `${(item.potencial_ganancia_usd / maxRevenue) * 100}%` }}
                                                 />
                                                 <div
-                                                    className="dashboard-chart__bar dashboard-chart__bar--female"
-                                                    style={{ width: `${item.porcentaje_mujeres}%` }}
+                                                    className="dashboard-chart__vbar-avg-line"
+                                                    style={{ bottom: `${(avgRevenue / maxRevenue) * 100}%` }}
                                                 />
                                             </div>
-                                            <span className="dashboard-chart__row-value">
-                                                {item.porcentaje_hombres.toFixed(0)}% / {item.porcentaje_mujeres.toFixed(0)}%
+                                            <span className="dashboard-chart__vbar-value">
+                                                ${(item.potencial_ganancia_usd / 1000).toFixed(0)}K
                                             </span>
                                         </div>
-                                        <span className="dashboard-chart__row-age">
-                                            {item.edad_promedio_oyente.toFixed(1)} a
-                                        </span>
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
+                                <div className="dashboard-chart__avg-legend">
+                                    <span className="dashboard-chart__avg-line-sample" />
+                                    <span>Prom: ${(avgRevenue / 1000).toFixed(0)}K</span>
+                                </div>
+                            </div>
+
+                            <div className="dashboard-business__chart">
+                                <h3 className="dashboard-chart__title">Demografía por género</h3>
+                                <div className="dashboard-chart__table">
+                                    {data.map((item) => (
+                                        <div key={item.genero} className={`dashboard-chart__row ${rowClass(item.genero)}`}>
+                                            <span className="dashboard-chart__row-label">{item.genero}</span>
+                                            <div className="dashboard-chart__row-bars">
+                                                <div className="dashboard-chart__bar-group">
+                                                    <div
+                                                        className="dashboard-chart__bar dashboard-chart__bar--male"
+                                                        style={{ width: `${item.porcentaje_hombres}%` }}
+                                                    />
+                                                    <div
+                                                        className="dashboard-chart__bar dashboard-chart__bar--female"
+                                                        style={{ width: `${item.porcentaje_mujeres}%` }}
+                                                    />
+                                                </div>
+                                                <span className="dashboard-chart__row-value">
+                                                    {item.porcentaje_hombres.toFixed(0)}% / {item.porcentaje_mujeres.toFixed(0)}%
+                                                </span>
+                                            </div>
+                                            <span className="dashboard-chart__row-age">
+                                                {item.edad_promedio_oyente.toFixed(1)} a
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         </div>
 
-                        <div className="dashboard-business__chart">
-                            <h3 className="dashboard-chart__title">Potencial de ganancia</h3>
-                            <div className="dashboard-chart__bars-vertical">
-                                {sortedByRevenue.map((item) => (
-                                    <div key={item.genero} className={`dashboard-chart__vbar-group ${vbarClass(item.genero)}`}>
-                                        <div className="dashboard-chart__vbar-label">{item.genero}</div>
-                                        <div className="dashboard-chart__vbar-track">
-                                            <div
-                                                className="dashboard-chart__vbar-fill"
-                                                style={{ height: `${(item.potencial_ganancia_usd / maxRevenue) * 100}%` }}
-                                            />
-                                            <div
-                                                className="dashboard-chart__vbar-avg-line"
-                                                style={{ bottom: `${(avgRevenue / maxRevenue) * 100}%` }}
-                                            />
-                                        </div>
-                                        <span className="dashboard-chart__vbar-value">
-                                            ${(item.potencial_ganancia_usd / 1000).toFixed(0)}K
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
-                            <div className="dashboard-chart__avg-legend">
-                                <span className="dashboard-chart__avg-line-sample" />
-                                <span>Prom: ${(avgRevenue / 1000).toFixed(0)}K</span>
-                            </div>
-                        </div>
-                    </div>
 
                     {/* ── Tabla resumen ── */}
                     <div className="dashboard-business__table-wrap">
@@ -421,6 +474,16 @@ function GenreSidebarPanel({ data }: GenreSidebarPanelProps) {
         data.cumplimiento_meta_pct >= 80 ? 'dot--green' :
         data.cumplimiento_meta_pct >= 60 ? 'dot--yellow' : 'dot--red';
 
+    const actionMap: Record<string, string> = {
+        'Pop': 'Inversión Prioritaria: Redoblar pauta publicitaria y expandir catálogo comercial.',
+        'Hip-Hop': 'Crecimiento Agresivo: Invertir en nuevos talentos y optimizar contenido explícito.',
+        'Vallenato': 'Expansión Sólida: Incrementar catálogo de conciertos y eventos locales.',
+        'Electrónica': 'Campaña Dirigida: Focar esfuerzos en festivales y mercados jóvenes.',
+        'Rock': 'Mantenimiento Optimizado: Rotar catálogo antiguo por tendencias actuales.',
+        'Clásica': 'Inversión Conservadora: Mantener estabilidad y buscar nichos premium.',
+        'Jazz': 'Reestructuración: Analizar causas de caída y pivotar estrategia de mercado.',
+    };
+
     return (
         <div className="dashboard-sidebar__panel">
             <div className="dashboard-sidebar__panel-grid">
@@ -443,6 +506,32 @@ function GenreSidebarPanel({ data }: GenreSidebarPanelProps) {
                     <span className="dashboard-sidebar__panel-label">Tendencia</span>
                     <span className="dashboard-sidebar__panel-value" style={{ color: trend >= 0 ? '#22c55e' : '#ef4444' }}>
                         {trend >= 0 ? '↑' : '↓'} {Math.abs(trend)}%
+                    </span>
+                </div>
+                <div className="dashboard-sidebar__panel-metric">
+                    <span className="dashboard-sidebar__panel-label">ROI Est.</span>
+                    <span className="dashboard-sidebar__panel-value" style={{ color: '#22c55e' }}>
+                        {data.roi_estimado_pct?.toFixed(1)}%
+                    </span>
+                </div>
+                <div className="dashboard-sidebar__panel-metric">
+                    <span className="dashboard-sidebar__panel-label">Inv. Rec.</span>
+                    <span className="dashboard-sidebar__panel-value">${(data.inversion_recomendada_usd / 1000).toFixed(0)}K</span>
+                </div>
+                <div className="dashboard-sidebar__panel-metric">
+                    <span className="dashboard-sidebar__panel-label">Score</span>
+                    <span className="dashboard-sidebar__panel-value">
+                        {data.score_inversion}/100
+                    </span>
+                </div>
+                <div className="dashboard-sidebar__panel-metric">
+                    <span className="dashboard-sidebar__panel-label">Riesgo</span>
+                    <span className="dashboard-sidebar__panel-value">
+                        <span className={`dashboard-chart__goal-dot ${
+                            data.riesgo_inversion === 'Bajo' ? 'dot--green' : 
+                            data.riesgo_inversion === 'Medio' ? 'dot--yellow' : 'dot--red'
+                        }`} />
+                        {data.riesgo_inversion}
                     </span>
                 </div>
                 <div className="dashboard-sidebar__panel-metric">
@@ -469,6 +558,12 @@ function GenreSidebarPanel({ data }: GenreSidebarPanelProps) {
                     <span className="dashboard-sidebar__panel-label">Explícito</span>
                     <span className="dashboard-sidebar__panel-value">{data.porcentaje_explicitos !== null ? `${data.porcentaje_explicitos.toFixed(0)}%` : '0%'}</span>
                 </div>
+            </div>
+            <div className="dashboard-sidebar__panel-recommendation">
+                <span className="dashboard-sidebar__panel-recommendation-label">Acción Sugerida:</span>
+                <p className="dashboard-sidebar__panel-recommendation-text">
+                    {actionMap[data.genero] || 'Análisis de mercado pendiente para este género.'}
+                </p>
             </div>
             <div className="dashboard-sidebar__panel-bar-track">
                 <div

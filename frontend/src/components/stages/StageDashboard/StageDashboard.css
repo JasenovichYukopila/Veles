@@ -1,3 +1,69 @@
+/* ─── Insights Banner ────────────────────────────── */
+
+.dashboard-insights {
+    grid-column: 1 / -1;
+    margin-bottom: 1.5rem;
+    padding: 1.25rem;
+    border-radius: var(--radius-md);
+    background: linear-gradient(90deg, rgba(var(--genre-color-rgb, 124, 58, 237), 0.1) 0%, rgba(255, 255, 255, 0.02) 100%);
+    border: 1px solid rgba(var(--genre-color-rgb, 124, 58, 237), 0.2);
+    backdrop-filter: blur(8px);
+    animation: dashFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.dashboard-insights__content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.dashboard-insights__label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--genre-color, var(--color-accent));
+    font-weight: 600;
+}
+
+.dashboard-insights__text {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.dashboard-insights__text strong {
+    color: #fff;
+    font-weight: 600;
+}
+
+/* ─── Sidebar Recommendation ────────────────────────── */
+
+.dashboard-sidebar__panel-recommendation {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.05);
+    border-left: 3px solid var(--genre-color, var(--color-accent));
+}
+
+.dashboard-sidebar__panel-recommendation-label {
+    display: block;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    color: var(--color-text-secondary);
+    margin-bottom: 0.3rem;
+    font-weight: 600;
+}
+
+.dashboard-sidebar__panel-recommendation-text {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.4;
+    margin: 0;
+    font-style: italic;
+}
+
 /* ─── Container ────────────────────────────── */
 
 .stage-dashboard {

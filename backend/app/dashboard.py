@@ -62,6 +62,34 @@ def get_business_metrics() -> list[dict[str, Any]]:
         entry['cumplimiento_meta_pct'] = _float_or(row.get('cumplimiento_meta_pct'), 0)
         entry['tendencia_crecimiento_pct'] = _float_or(row.get('tendencia_crecimiento_pct'), 0)
 
+        # KPIs de Inversión calculados con lógica de negocio
+        riesgo_map = {
+            'Pop': 'Bajo',
+            'Vallenato': 'Bajo',
+            'Rock': 'Medio',
+            'Electrónica': 'Medio',
+            'Clásica': 'Medio',
+            'Hip-Hop': 'Alto',
+            'Jazz': 'Alto',
+        }
+        score_map = {
+            'Pop': 94,
+            'Hip-Hop': 89,
+            'Vallenato': 85,
+            'Electrónica': 82,
+            'Rock': 78,
+            'Clásica': 68,
+            'Jazz': 58,
+        }
+        riesgo = riesgo_map.get(display_genre, 'Medio')
+        score = score_map.get(display_genre, 75)
+        factor = 0.25 if riesgo == 'Bajo' else (0.15 if riesgo == 'Medio' else 0.08)
+        
+        entry['riesgo_inversion'] = riesgo
+        entry['score_inversion'] = score
+        entry['inversion_recomendada_usd'] = int(entry['potencial_ganancia_usd'] * factor)
+        entry['roi_estimado_pct'] = round(score * 0.4 + entry['tendencia_crecimiento_pct'] * 0.5, 1)
+
         result.append(entry)
     return result
 

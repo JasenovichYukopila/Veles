@@ -39,6 +39,10 @@ export interface BusinessMetric {
     meta_ingresos_usd: number;
     cumplimiento_meta_pct: number;
     tendencia_crecimiento_pct: number;
+    score_inversion?: number;
+    riesgo_inversion?: string;
+    inversion_recomendada_usd?: number;
+    roi_estimado_pct?: number;
 }
 
 export interface PersonalRecommendation {
