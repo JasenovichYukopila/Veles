@@ -4,10 +4,12 @@ import './StageProcessing.css';
 interface Props {
   audioBlob:     Blob | null;
   analysisReady: boolean;
+  error?:        boolean;
   onContinue:    () => void;
+  onRetry?:      () => void;
 }
 
-export function StageProcessing({ audioBlob, analysisReady, onContinue }: Props) {
+export function StageProcessing({ audioBlob, analysisReady, error, onContinue, onRetry }: Props) {
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const urlRef   = useRef<string | null>(null);
@@ -17,6 +19,7 @@ export function StageProcessing({ audioBlob, analysisReady, onContinue }: Props)
       urlRef.current = URL.createObjectURL(audioBlob);
       audioRef.current = new Audio(urlRef.current);
       audioRef.current.onended = () => setIsPlaying(false);
+      audioRef.current.onpause = () => setIsPlaying(false);
     }
     return () => {
       audioRef.current?.pause();
@@ -26,10 +29,9 @@ export function StageProcessing({ audioBlob, analysisReady, onContinue }: Props)
 
   // Stop playback when analysis finishes so the UI is calm
   useEffect(() => {
-    if (analysisReady && isPlaying) {
+    if (analysisReady) {
       audioRef.current?.pause();
       if (audioRef.current) audioRef.current.currentTime = 0;
-      setIsPlaying(false);
     }
   }, [analysisReady]);
 
@@ -51,9 +53,16 @@ export function StageProcessing({ audioBlob, analysisReady, onContinue }: Props)
     <section className="stage-processing">
       <div className="stage-processing__content">
 
-        {/* Visual — animating bars while analyzing, checkmark when done */}
+        {/* Visual — animating bars while analyzing, checkmark when done, X on error */}
         <div className="stage-processing__visual">
-          {analysisReady ? (
+          {error ? (
+            <div className="stage-processing__check" style={{ color: '#ef4444' }}>
+              <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+                <circle cx="18" cy="18" r="17" stroke="currentColor" strokeWidth="1.5" />
+                <path d="M12 12l12 12M24 12l-12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+            </div>
+          ) : analysisReady ? (
             <div className="stage-processing__check">
               <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
                 <circle cx="18" cy="18" r="17" stroke="currentColor" strokeWidth="1.5" />
@@ -85,17 +94,31 @@ export function StageProcessing({ audioBlob, analysisReady, onContinue }: Props)
         {/* Text */}
         <div className="stage-processing__text">
           <p className="stage-processing__label">
-            {analysisReady ? 'Análisis completo' : 'Analizando audio'}
+            {error ? 'Error de clasificación' : analysisReady ? 'Análisis completo' : 'Analizando audio'}
           </p>
           <p className="stage-processing__hint">
-            {analysisReady
+            {error
+              ? 'No se pudo conectar con el servidor'
+              : analysisReady
               ? '¿Qué quieres hacer?'
               : 'Identificando patrones espectrales'}
           </p>
         </div>
 
+        {/* Retry button on error */}
+        {error && (
+          <div className="stage-processing__actions">
+            <button className="stage-processing__continue" onClick={onRetry}>
+              Intentar de nuevo
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 7h8M7.5 3.5L11 7l-3.5 3.5" />
+              </svg>
+            </button>
+          </div>
+        )}
+
         {/* Actions — only shown when analysis is done */}
-        {analysisReady && (
+        {!error && analysisReady && (
           <div className="stage-processing__actions">
             {audioBlob && (
               <button
@@ -132,7 +155,7 @@ export function StageProcessing({ audioBlob, analysisReady, onContinue }: Props)
         )}
 
         {/* Listening hint while still analyzing */}
-        {!analysisReady && audioBlob && (
+        {!error && !analysisReady && audioBlob && (
           <button
             className="stage-processing__play stage-processing__play--subtle"
             onClick={togglePlay}

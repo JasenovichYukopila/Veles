@@ -185,18 +185,19 @@ def classify(audio_bytes: bytes) -> ClassificationResponse:
     return ClassificationResponse(genre=genre, confidence=confidence)
 
 def get_model():
-    from huggingface_hub import login, snapshot_download
+    from huggingface_hub import snapshot_download
     from dotenv import load_dotenv
 
     load_dotenv()
 
-    login(token=os.getenv("HF_TOKEN"))
+    hf_token = os.getenv("HF_TOKEN") or None
 
     print("Sincronizando modelo desde Hugging Face...")
 
     snapshot_download(
         repo_id="F4-bit/ML-voting-classifier-UTB",
         local_dir="./models",
+        token=hf_token,
     )
 
     print("[Ok] Modelo actualizado")

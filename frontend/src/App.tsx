@@ -17,16 +17,21 @@ export default function App() {
   const [stage, setStage]         = useState<Stage>('landing');
   const [result, setResult]       = useState<ClassificationResult | null>(null);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [classifyError, setClassifyError] = useState(false);
 
   const handleResult = (data: ClassificationResult) => {
     setResult(data);
-    // Stage stays on 'processing' — user must confirm to continue
+  };
+
+  const handleError = () => {
+    setClassifyError(true);
   };
 
   const { startRecording, stream } = useAudioRecorder({
     setStage,
     onResult: handleResult,
     onAudioBlob: setAudioBlob,
+    onError: handleError,
   });
 
   useEffect(() => {
@@ -47,8 +52,9 @@ export default function App() {
 
   const handleReset = () => {
     setResult(null);
-      setAudioBlob(null);
-      setStage('menu');
+    setAudioBlob(null);
+    setClassifyError(false);
+    setStage('menu');
   };
 
   const showProgressBar = stage !== 'landing' && stage !== 'menu' && stage !== 'dashboard';
@@ -74,7 +80,9 @@ export default function App() {
           <StageProcessing
             audioBlob={audioBlob}
             analysisReady={result !== null}
+            error={classifyError}
             onContinue={() => setStage('result')}
+            onRetry={() => { setClassifyError(false); setAudioBlob(null); setStage('idle'); }}
           />
         );
       case 'result':

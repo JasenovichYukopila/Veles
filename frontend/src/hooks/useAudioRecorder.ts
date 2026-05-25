@@ -7,6 +7,7 @@ interface UseAudioRecorderProps {
   setStage: (stage: Stage) => void;
   onResult: (result: ClassificationResult) => void;
   onAudioBlob?: (blob: Blob) => void;
+  onError?: () => void;
 }
 
 interface UseAudioRecorderReturn {
@@ -18,6 +19,7 @@ export function useAudioRecorder({
   setStage,
   onResult,
   onAudioBlob,
+  onError,
 }: UseAudioRecorderProps): UseAudioRecorderReturn {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef        = useRef<Blob[]>([]);
@@ -76,7 +78,11 @@ export function useAudioRecorder({
           }
         } catch {
           if (isMountedRef.current) {
-            setStage('idle');
+            if (onError) {
+              onError();
+            } else {
+              setStage('idle');
+            }
           }
         }
       };
