@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import type { ClassificationResult, PersonalRecommendation } from '../../../types';
-import { GENRE_INFO, type TrackInfo } from '../../../constants';
+
 import { fetchPersonalRecommendations } from '../../../services/dashboard';
 import './StageDetail.css';
 
@@ -10,10 +10,7 @@ interface StageDetailProps {
 }
 
 export function StageDetail({ result, onReset }: StageDetailProps) {
-  const { genre }         = result;
-  const info              = GENRE_INFO[genre];
-  const [activeTrack, setActiveTrack] = useState<TrackInfo | null>(null);
-
+  const { genre } = result;
   const [spotifyData, setSpotifyData] = useState<PersonalRecommendation[]>([]);
   const [spotifyLoading, setSpotifyLoading] = useState(true);
   const [spotifyError, setSpotifyError] = useState<string | null>(null);
@@ -53,39 +50,6 @@ export function StageDetail({ result, onReset }: StageDetailProps) {
           <span className="stage-detail__genre-tag">{genre}</span>
           <h2 className="stage-detail__title">Escucha también</h2>
         </div>
-
-        {/* ── YouTube tracks ── */}
-        <div className="stage-detail__tracks">
-          {info.tracks.map((track) => (
-            <button
-              key={`${track.artist}-${track.title}`}
-              className={`stage-detail__track ${activeTrack?.title === track.title ? 'stage-detail__track--active' : ''}`}
-              onClick={() => setActiveTrack(
-                activeTrack?.title === track.title ? null : track
-              )}
-            >
-              <div className="stage-detail__track-info">
-                <span className="stage-detail__track-title">{track.title}</span>
-                <span className="stage-detail__track-artist">{track.artist}</span>
-              </div>
-              <div className="stage-detail__track-action">
-                {activeTrack?.title === track.title ? <PauseIcon /> : <PlayIcon />}
-              </div>
-            </button>
-          ))}
-        </div>
-
-        {activeTrack && (
-          <div className="stage-detail__player">
-            <iframe
-              key={activeTrack.videoId}
-              src={`https://www.youtube.com/embed/${activeTrack.videoId}?autoplay=1&rel=0`}
-              title={`${activeTrack.title} - ${activeTrack.artist}`}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope"
-              allowFullScreen
-            />
-          </div>
-        )}
 
         {/* ── Spotify recommendations ── */}
         <div className="stage-detail__spotify-section">
@@ -132,7 +96,7 @@ export function StageDetail({ result, onReset }: StageDetailProps) {
 
               <div className="stage-detail__spotify-songs">
                 {spotifyData.map((item) => (
-                  <div key={item.cancion_id || item.cancion_nombre} className="stage-detail__spotify-song">
+                  <div key={item.cancion_id || item.cancion_nombre} className="stage-detail__spotify-song" onClick={() => window.open(`https://open.spotify.com/track/${item.cancion_id}`, '_blank')}>
                     <div className="stage-detail__spotify-song-img">
                       {item.imagen_album ? (
                         <img src={item.imagen_album} alt={item.cancion_nombre} loading="lazy" />
@@ -169,19 +133,4 @@ function fmt(ms: number): string {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-function PlayIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <polygon points="5,3 19,12 5,21" />
-    </svg>
-  );
-}
 
-function PauseIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <rect x="6" y="4" width="4" height="16" />
-      <rect x="14" y="4" width="4" height="16" />
-    </svg>
-  );
-}
