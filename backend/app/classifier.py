@@ -7,6 +7,7 @@ import librosa
 import tempfile
 import os
 import subprocess
+import unicodedata
 
 from app.schemas import ClassificationResponse, Genre
 
@@ -24,6 +25,11 @@ MODEL = None
 SCALER = None
 LABEL_ENCODER = None
 
+def unaccent(text: str) -> str:
+    return ''.join(
+        c for c in unicodedata.normalize('NFD', text)
+        if unicodedata.category(c) != 'Mn'
+    )
 
 def extract_features(y: np.ndarray, sr: int) -> np.ndarray:
     # --- Shared intermediates ---
@@ -204,7 +210,7 @@ def classify_genre(features: np.ndarray):
     pred = MODEL.predict(X_scaled)
     
     raw_genre = str(LABEL_ENCODER.inverse_transform(pred)[0])
-    genre = next((g for g in GENRES if g.lower() == raw_genre.lower()), raw_genre)
+    genre = next((g for g in GENRES if unaccent(g).lower() == unaccent(raw_genre).lower()), raw_genre)
 
     confidence = None
     if hasattr(MODEL, "predict_proba"):
