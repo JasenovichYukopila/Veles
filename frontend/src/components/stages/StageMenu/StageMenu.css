@@ -1,0 +1,202 @@
+.stage-menu {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 100vh;
+    padding: 2rem;
+}
+
+.stage-menu__content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3rem;
+    max-width: 560px;
+    width: 100%;
+    animation: stageMenuFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes stageMenuFadeIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0);    }
+}
+
+.stage-menu__header {
+    text-align: center;
+}
+
+.stage-menu__title {
+    font-size: clamp(3rem, 8vw, 6rem);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    background: linear-gradient(135deg, #F0F0F5 0%, #6060A0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+}
+
+.stage-menu__subtitle {
+    margin-top: 0.75rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+}
+
+.stage-menu__cards {
+    display: flex;
+    flex-direction: row;
+    gap: 1.25rem;
+    width: 100%;
+}
+
+/* ─── Card base ────────────────────────────── */
+
+.stage-menu__card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 2rem;
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    flex: 1;
+    aspect-ratio: 1;
+    max-height: 280px;
+    transition: background 0.25s ease,
+                border-color 0.25s ease,
+                transform 0.25s ease,
+                box-shadow 0.25s ease;
+    cursor: pointer;
+    color: inherit;
+    font-family: inherit;
+    overflow: hidden;
+}
+
+/* ─── Card: classify (purple) ────────────────── */
+
+.stage-menu__card--classify {
+    --card-color: #7C3AED;
+    --card-rgb: 124, 58, 237;
+}
+
+.stage-menu__card--classify::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+        circle at 50% 40%,
+        rgba(var(--card-rgb), 0.12) 0%,
+        transparent 60%
+    );
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.stage-menu__card--classify:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(var(--card-rgb), 0.5);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(var(--card-rgb), 0.25);
+}
+
+.stage-menu__card--classify:hover::before {
+    opacity: 1;
+}
+
+/* ─── Card: dashboard (indigo) ───────────────── */
+
+.stage-menu__card--dashboard {
+    --card-color: #818CF8;
+    --card-rgb: 129, 140, 248;
+}
+
+.stage-menu__card--dashboard::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+        circle at 50% 40%,
+        rgba(var(--card-rgb), 0.12) 0%,
+        transparent 60%
+    );
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.stage-menu__card--dashboard:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(var(--card-rgb), 0.5);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(var(--card-rgb), 0.25);
+}
+
+.stage-menu__card--dashboard:hover::before {
+    opacity: 1;
+}
+
+/* ─── Icon ───────────────────────────────────── */
+
+.stage-menu__card-icon {
+    position: relative;
+    z-index: 1;
+    width: 80px;
+    height: 80px;
+    border-radius: var(--radius-full);
+    background: rgba(var(--card-rgb), 0.15);
+    color: var(--card-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: transform 0.25s ease,
+                background 0.25s ease,
+                box-shadow 0.25s ease;
+}
+
+.stage-menu__card:hover .stage-menu__card-icon {
+    transform: scale(1.08);
+    background: rgba(var(--card-rgb), 0.25);
+    box-shadow: 0 0 32px rgba(var(--card-rgb), 0.35);
+}
+
+/* ─── Label ──────────────────────────────────── */
+
+.stage-menu__card-label {
+    position: relative;
+    z-index: 1;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    letter-spacing: 0.02em;
+    transition: color 0.25s ease;
+}
+
+.stage-menu__card:hover .stage-menu__card-label {
+    color: var(--card-color);
+}
+
+/* ─── Mobile ─────────────────────────────────── */
+
+@media (max-width: 600px) {
+    .stage-menu__cards {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .stage-menu__card {
+        width: 100%;
+        max-width: 260px;
+        aspect-ratio: auto;
+        min-height: 200px;
+    }
+}

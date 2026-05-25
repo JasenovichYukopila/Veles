@@ -3,6 +3,7 @@ import type { Stage, ClassificationResult } from './types';
 import { GENRE_INFO } from './constants';
 import { useAudioRecorder } from './hooks/useAudioRecorder';
 import { ProgressBar }      from './components/ProgressBar/ProgressBar';
+import { StageMenu }        from './components/stages/StageMenu/StageMenu';
 import { StageIdle }        from './components/stages/StageIdle/StageIdle';
 import { StageRecording }   from './components/stages/StageRecording/StageRecording';
 import { StageProcessing }  from './components/stages/StageProcessing/StageProcessing';
@@ -12,7 +13,7 @@ import { StageDashboard }   from './components/stages/StageDashboard/StageDashbo
 import './App.css';
 
 export default function App() {
-  const [stage, setStage]         = useState<Stage>('idle');
+  const [stage, setStage]         = useState<Stage>('menu');
   const [result, setResult]       = useState<ClassificationResult | null>(null);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
 
@@ -45,13 +46,23 @@ export default function App() {
 
   const handleReset = () => {
     setResult(null);
-    setStage('idle');
+    setAudioBlob(null);
+    setStage('menu');
   };
+
+  const showProgressBar = stage !== 'menu' && stage !== 'dashboard';
 
   const renderStage = () => {
     switch (stage) {
+      case 'menu':
+        return (
+          <StageMenu
+            onClassify={() => setStage('idle')}
+            onDashboard={() => setStage('dashboard')}
+          />
+        );
       case 'idle':
-        return <StageIdle onStart={handleStart} />;
+        return <StageIdle onStart={handleStart} onBack={() => setStage('menu')} />;
       case 'recording':
         return <StageRecording stream={stream} />;
       case 'processing':
@@ -68,7 +79,6 @@ export default function App() {
             result={result}
             onContinue={() => setStage('detail')}
             onReset={handleReset}
-            onDashboard={() => setStage('dashboard')}
           />
         ) : null;
       case 'detail':
@@ -76,16 +86,15 @@ export default function App() {
           <StageDetail
             result={result}
             onReset={handleReset}
-            onDashboard={() => setStage('dashboard')}
           />
         ) : null;
       case 'dashboard':
-        return result ? (
+        return (
           <StageDashboard
-            genre={result.genre}
+            genre={result?.genre}
             onReset={handleReset}
           />
-        ) : null;
+        );
     }
   };
 
@@ -93,7 +102,7 @@ export default function App() {
     <main className={`app app--${stage}`}>
       <div className="app__noise" aria-hidden="true" />
       <div className="app__ambient" aria-hidden="true" />
-      <ProgressBar currentStage={stage} />
+      {showProgressBar && <ProgressBar currentStage={stage} />}
       <div className="app__content">
         {renderStage()}
       </div>

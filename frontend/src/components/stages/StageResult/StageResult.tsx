@@ -6,10 +6,9 @@ interface StageResultProps {
   result:     ClassificationResult;
   onContinue: () => void;
   onReset:    () => void;
-  onDashboard: () => void;
 }
 
-export function StageResult({ result, onContinue, onReset, onDashboard }: StageResultProps) {
+export function StageResult({ result, onContinue, onReset }: StageResultProps) {
   const { genre, confidence } = result;
   const info                  = GENRE_INFO[genre];
   const confidencePercent     = Math.round(confidence * 100);
@@ -42,9 +41,6 @@ export function StageResult({ result, onContinue, onReset, onDashboard }: StageR
         <div className="stage-result__actions">
           <button className="stage-result__btn-primary" onClick={onContinue}>
             Ver canciones representativas
-          </button>
-          <button className="stage-result__btn-secondary" onClick={onDashboard}>
-            Ver Dashboard
           </button>
           <button className="stage-result__btn-tertiary" onClick={onReset}>
             Identificar otro género

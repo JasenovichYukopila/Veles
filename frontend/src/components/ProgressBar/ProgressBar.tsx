@@ -8,6 +8,7 @@ interface ProgressBarProps {
 const STAGES: Stage[] = ['idle', 'recording', 'processing', 'result', 'detail', 'dashboard'];
 
 const STAGE_LABELS: Record<Stage, string> = {
+  menu:       'Menú',
   idle:       'Inicio',
   recording:  'Grabando',
   processing: 'Analizando',

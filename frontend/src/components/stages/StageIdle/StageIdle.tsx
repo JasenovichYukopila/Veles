@@ -2,11 +2,16 @@ import './StageIdle.css';
 
 interface StageIdleProps {
   onStart: () => void;
+  onBack:  () => void;
 }
 
-export function StageIdle({ onStart }: StageIdleProps) {
+export function StageIdle({ onStart, onBack }: StageIdleProps) {
   return (
     <section className="stage-idle">
+      <button className="stage-idle__back" onClick={onBack}>
+        ← Volver al menú
+      </button>
+
       <div className="stage-idle__content">
         <div className="stage-idle__header">
           <h1 className="stage-idle__title">Veles</h1>

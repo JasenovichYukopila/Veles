@@ -1,11 +1,28 @@
 .stage-idle {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
     width: 100%;
     min-height: 100vh;
   }
-  
+
+  .stage-idle__back {
+    position: absolute;
+    top: 2rem;
+    left: 2rem;
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    letter-spacing: 0.04em;
+    transition: color var(--transition-fast);
+    z-index: 10;
+    padding: 0.25rem 0;
+  }
+
+  .stage-idle__back:hover {
+    color: var(--color-text-primary);
+  }
+
   .stage-idle__content {
     display: flex;
     flex-direction: column;
