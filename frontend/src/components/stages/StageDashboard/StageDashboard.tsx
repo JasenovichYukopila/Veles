@@ -1,7 +1,15 @@
 import { useEffect, useState } from 'react';
 import type { Genre, BusinessMetric } from '../../../types';
+import { GENRE_INFO } from '../../../constants';
 import { fetchBusinessMetrics } from '../../../services/dashboard';
 import './StageDashboard.css';
+
+function hexToRgb(hex: string): string {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `${r}, ${g}, ${b}`;
+}
 
 type DashboardView = 'menu' | 'business';
 
@@ -20,7 +28,7 @@ export function StageDashboard({ genre, onReset }: StageDashboardProps) {
                     <DashboardMenu genre={genre} onSelect={setView} onReset={onReset} />
                 )}
                 {view === 'business' && (
-                    <BusinessView onBack={() => setView('menu')} />
+                    <BusinessView genre={genre ?? null} onBack={() => setView('menu')} />
                 )}
 
             </div>
@@ -157,10 +165,11 @@ function DashboardInsights({ data, selectedGenre }: { data: BusinessMetric[], se
 /* ─── Business View ──────────────────────────── */
 
 interface BusinessViewProps {
+    genre: string | null;
     onBack: () => void;
 }
 
-function BusinessView({ onBack }: BusinessViewProps) {
+function BusinessView({ genre, onBack }: BusinessViewProps) {
     const [data, setData] = useState<BusinessMetric[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -182,6 +191,19 @@ function BusinessView({ onBack }: BusinessViewProps) {
             });
         return () => { cancelled = true; };
     }, []);
+
+    useEffect(() => {
+        const root = document.documentElement;
+        const targetGenre = selectedGenre ?? genre;
+        if (targetGenre && targetGenre in GENRE_INFO) {
+            const info = GENRE_INFO[targetGenre as Genre];
+            root.style.setProperty('--genre-color', info.color);
+            root.style.setProperty('--genre-color-rgb', hexToRgb(info.color));
+        } else {
+            root.style.setProperty('--genre-color', '#7C3AED');
+            root.style.setProperty('--genre-color-rgb', '124, 58, 237');
+        }
+    }, [selectedGenre, genre]);
 
     if (loading) return <DashboardLoading />;
     if (error) return <DashboardError message={error} onRetry={() => window.location.reload()} />;
