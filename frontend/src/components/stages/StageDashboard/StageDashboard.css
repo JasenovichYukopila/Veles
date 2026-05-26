@@ -1245,13 +1245,86 @@
     gap: 0.4rem;
 }
 
-.dashboard-chart__bar-group {
+.dashboard-chart__doughnut {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+}
+
+.dashboard-chart__doughnut svg {
+    width: 100%;
+    height: 100%;
+}
+
+.dashboard-chart__doughnut--large {
+    width: 56px;
+    height: 56px;
+}
+
+.dashboard-chart__table--grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 0.6rem;
     flex: 1;
+    align-content: space-evenly;
+}
+
+.dashboard-chart__doughnut-card {
     display: flex;
-    height: 8px;
-    border-radius: var(--radius-full);
-    overflow: hidden;
-    background: rgba(255, 255, 255, 0.08);
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+    padding: 0.5rem 0.35rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--radius-sm);
+    transition: background 0.25s ease, border-color 0.25s ease, opacity 0.3s ease, box-shadow 0.25s ease;
+}
+
+.dashboard-chart__doughnut-card:hover {
+    background: rgba(255, 255, 255, 0.055);
+}
+
+.dashboard-chart__doughnut-card--focused {
+    background: rgba(var(--genre-color-rgb, 124, 58, 237), 0.1);
+    border-color: rgba(var(--genre-color-rgb, 124, 58, 237), 0.45);
+    box-shadow: 0 0 14px rgba(var(--genre-color-rgb, 124, 58, 237), 0.18);
+}
+
+.dashboard-chart__doughnut-card--unfocused {
+    opacity: 0.32;
+}
+
+.dashboard-chart__doughnut-card--unfocused:hover {
+    opacity: 0.65;
+}
+
+.dashboard-chart__doughnut--card {
+    width: 52px;
+    height: 52px;
+}
+
+.dashboard-chart__doughnut-card-genre {
+    font-size: 0.62rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-align: center;
+}
+
+.dashboard-chart__doughnut-card-pct {
+    font-size: 0.6rem;
+    color: var(--color-text-secondary);
+    font-family: var(--font-mono);
+    text-align: center;
+}
+
+.dashboard-chart__doughnut-card-age {
+    font-size: 0.58rem;
+    color: var(--color-text-secondary);
+    font-family: var(--font-mono);
+    text-align: center;
 }
 
 .dashboard-chart__row-value {
@@ -1432,27 +1505,89 @@
     height: 260px !important;
 }
 
-.chart-overlay__table {
-    gap: 0.85rem !important;
+.chart-overlay__table--grid {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    gap: 1rem !important;
+    justify-content: flex-start !important;
+    align-items: flex-start !important;
+    padding-bottom: 0.5rem !important;
 }
 
-.chart-overlay__table .dashboard-chart__bar-group {
+.chart-overlay__table--grid .dashboard-chart__doughnut-card {
+    flex-shrink: 0 !important;
+    min-width: 140px;
+    max-width: 160px;
+}
+
+.chart-overlay__table--grid .dashboard-chart__doughnut--card {
+    width: 64px !important;
+    height: 64px !important;
+}
+
+.chart-overlay__table--grid .dashboard-chart__doughnut-card-genre {
+    font-size: 0.75rem !important;
+}
+
+.chart-overlay__table--grid .dashboard-chart__doughnut-card-pct {
+    font-size: 0.68rem !important;
+}
+
+.chart-overlay__table--grid .dashboard-chart__doughnut-card-age {
+    font-size: 0.65rem !important;
+}
+
+.chart-overlay__analysis {
+    margin-bottom: 1.25rem;
+    padding: 0.7rem 1rem;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid rgba(var(--genre-color-rgb, 124, 58, 237), 0.4);
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+}
+
+.chart-overlay__analysis strong {
+    color: var(--color-text-primary);
+    font-weight: 600;
+}
+
+.chart-analysis {
+    margin-top: 0.6rem;
+    padding: 0.5rem 0.65rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid rgba(var(--genre-color-rgb, 124, 58, 237), 0.28);
+    font-size: 0.62rem;
+    color: var(--color-text-secondary);
+    line-height: 1.4;
+}
+
+.chart-analysis strong {
+    color: var(--color-text-primary);
+    font-weight: 600;
+}
+
+.chart-overlay__table--grid .dashboard-chart__doughnut-card .dashboard-business__goal-card-bar-track {
+    width: 100%;
     height: 12px !important;
+    border-radius: var(--radius-full);
+    background: rgba(255, 255, 255, 0.06);
 }
 
-.chart-overlay__table .dashboard-chart__row-label {
-    width: 90px !important;
-    font-size: 0.8rem !important;
+.chart-overlay__table--grid .dashboard-chart__doughnut-card .dashboard-business__goal-card-bar-fill {
+    height: 100%;
+    border-radius: var(--radius-full);
+    background: linear-gradient(90deg, rgba(var(--genre-color-rgb, 124, 58, 237), 0.6), rgba(var(--genre-color-rgb, 124, 58, 237), 0.9));
 }
 
-.chart-overlay__table .dashboard-chart__row-value {
-    font-size: 0.72rem !important;
-    width: 72px !important;
-}
-
-.chart-overlay__table .dashboard-chart__row-age {
-    font-size: 0.72rem !important;
-    width: 48px !important;
+.chart-overlay__table--grid .dashboard-chart__doughnut-card .dashboard-business__goal-card-values {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
 }
 
 /* ─── Mobile ────────────────────────────────── */

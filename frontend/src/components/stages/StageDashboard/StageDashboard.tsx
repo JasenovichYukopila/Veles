@@ -176,7 +176,7 @@ function BusinessView({ genre, onBack }: BusinessViewProps) {
     const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
     const [sortKey, setSortKey] = useState<SortKey>('potencial_ganancia_usd');
     const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
-    const [expandedChart, setExpandedChart] = useState<'potencial' | 'demografia' | null>(null);
+    const [expandedChart, setExpandedChart] = useState<'potencial' | 'demografia' | 'metas' | null>(null);
 
     useEffect(() => {
         let cancelled = false;
@@ -242,6 +242,37 @@ function BusinessView({ genre, onBack }: BusinessViewProps) {
             : '';
 
     const topGenre = sortedData[0]?.genero ?? '';
+
+    const overlayData = selectedGenre ? data.filter(d => d.genero === selectedGenre) : data;
+    const overlaySortedByRevenue = selectedGenre
+        ? sortedByRevenue.filter(d => d.genero === selectedGenre)
+        : sortedByRevenue;
+    const overlayMaxRevenue = Math.max(...overlaySortedByRevenue.map(d => d.potencial_ganancia_usd), 1);
+    const overlayAvgRevenue = overlaySortedByRevenue.reduce((s, d) => s + d.potencial_ganancia_usd, 0) / (overlaySortedByRevenue.length || 1);
+
+    const overlayPotencialAnalysis = (() => {
+        const sorted = [...overlaySortedByRevenue].sort((a, b) => b.potencial_ganancia_usd - a.potencial_ganancia_usd);
+        const top = sorted[0];
+        const last = sorted[sorted.length - 1];
+        const aboveAvg = sorted.filter(d => d.potencial_ganancia_usd > overlayAvgRevenue).length;
+        return { top, last, aboveAvg, total: sorted.length, avg: overlayAvgRevenue };
+    })();
+
+    const overlayDemografiaAnalysis = (() => {
+        const topMale = [...overlayData].sort((a, b) => b.porcentaje_hombres - a.porcentaje_hombres)[0];
+        const topFemale = [...overlayData].sort((a, b) => b.porcentaje_mujeres - a.porcentaje_mujeres)[0];
+        const ages = overlayData.map(d => d.edad_promedio_oyente);
+        return { topMale, topFemale, minAge: Math.min(...ages), maxAge: Math.max(...ages) };
+    })();
+
+    const overlayMetasAnalysis = (() => {
+        const sorted = [...overlayData].sort((a, b) => b.cumplimiento_meta_pct - a.cumplimiento_meta_pct);
+        const top = sorted[0];
+        const fullyAchieved = sorted.filter(d => d.cumplimiento_meta_pct >= 100).length;
+        const above80 = sorted.filter(d => d.cumplimiento_meta_pct >= 80).length;
+        const lowest = sorted[sorted.length - 1];
+        return { top, fullyAchieved, above80, total: sorted.length, lowest };
+    })();
 
     const goalData = selectedGenre
         ? data.filter((d) => d.genero === selectedGenre)
@@ -309,30 +340,32 @@ function BusinessView({ genre, onBack }: BusinessViewProps) {
 
                             <div className="dashboard-business__chart dashboard-business__chart--clickable" onClick={() => setExpandedChart('demografia')}>
                                 <h3 className="dashboard-chart__title">Demografía por género</h3>
-                                <div className="dashboard-chart__table">
-                                    {data.map((item) => (
-                                        <div key={item.genero} className={`dashboard-chart__row ${rowClass(item.genero)}`}>
-                                            <span className="dashboard-chart__row-label">{item.genero}</span>
-                                            <div className="dashboard-chart__row-bars">
-                                                <div className="dashboard-chart__bar-group">
-                                                    <div
-                                                        className="dashboard-chart__bar dashboard-chart__bar--male"
-                                                        style={{ width: `${item.porcentaje_hombres}%` }}
-                                                    />
-                                                    <div
-                                                        className="dashboard-chart__bar dashboard-chart__bar--female"
-                                                        style={{ width: `${item.porcentaje_mujeres}%` }}
-                                                    />
+                                <div className="dashboard-chart__table dashboard-chart__table--grid">
+                                    {data.map((item) => {
+                                        const circumference = 2 * Math.PI * 22;
+                                        return (
+                                            <div key={item.genero} className={`dashboard-chart__doughnut-card ${rowClass(item.genero)}`}>
+                                                <div className="dashboard-chart__doughnut dashboard-chart__doughnut--card">
+                                                    <svg viewBox="0 0 52 52" style={{ transform: 'rotate(-90deg)' }}>
+                                                        <circle cx="26" cy="26" r="22" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="5" />
+                                                        <circle cx="26" cy="26" r="22" fill="none" stroke="#5B9BD5" strokeWidth="5"
+                                                            strokeDasharray={`${(item.porcentaje_hombres / 100) * circumference} ${circumference}`}
+                                                            strokeDashoffset="0" />
+                                                        <circle cx="26" cy="26" r="22" fill="none" stroke="#D4789C" strokeWidth="5"
+                                                            strokeDasharray={`${(item.porcentaje_mujeres / 100) * circumference} ${circumference}`}
+                                                            strokeDashoffset={`${-(item.porcentaje_hombres / 100) * circumference}`} />
+                                                    </svg>
                                                 </div>
-                                                <span className="dashboard-chart__row-value">
+                                                <span className="dashboard-chart__doughnut-card-genre">{item.genero}</span>
+                                                <span className="dashboard-chart__doughnut-card-pct">
                                                     {item.porcentaje_hombres.toFixed(0)}% / {item.porcentaje_mujeres.toFixed(0)}%
                                                 </span>
+                                                <span className="dashboard-chart__doughnut-card-age">
+                                                    {item.edad_promedio_oyente.toFixed(1)} a
+                                                </span>
                                             </div>
-                                            <span className="dashboard-chart__row-age">
-                                                {item.edad_promedio_oyente.toFixed(1)} a
-                                            </span>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             </div>
                         </div>
@@ -386,7 +419,7 @@ function BusinessView({ genre, onBack }: BusinessViewProps) {
                     </div>
 
                     {/* ── Goal meter cards row ── */}
-                    <div className="dashboard-business__goals-row">
+                    <div className="dashboard-business__goals-row dashboard-business__chart--clickable" onClick={() => setExpandedChart('metas')}>
                         <h3 className="dashboard-chart__title dashboard-business__goals-title">Medidor de Metas</h3>
                         <div className="dashboard-business__goals-cards">
                             {goalData.map((item) => {
@@ -429,13 +462,16 @@ function BusinessView({ genre, onBack }: BusinessViewProps) {
         {expandedChart && (
             <ChartOverlay
                 chart={expandedChart}
-                sortedByRevenue={sortedByRevenue}
-                maxRevenue={maxRevenue}
-                avgRevenue={avgRevenue}
-                data={data}
+                sortedByRevenue={overlaySortedByRevenue}
+                maxRevenue={overlayMaxRevenue}
+                avgRevenue={overlayAvgRevenue}
+                data={overlayData}
                 rowClass={rowClass}
                 vbarClass={vbarClass}
                 onClose={() => setExpandedChart(null)}
+                potencialAnalysis={overlayPotencialAnalysis}
+                demografiaAnalysis={overlayDemografiaAnalysis}
+                metasAnalysis={overlayMetasAnalysis}
             />
         )}
             </>
@@ -553,7 +589,7 @@ function GenreSidebarPanel({ data }: GenreSidebarPanelProps) {
                 </div>
                 <div className="dashboard-sidebar__panel-metric">
                     <span className="dashboard-sidebar__panel-label">Inv. Rec.</span>
-                    <span className="dashboard-sidebar__panel-value">${(data.inversion_recomendada_usd / 1000).toFixed(0)}K</span>
+                    <span className="dashboard-sidebar__panel-value">${((data.inversion_recomendada_usd ?? 0) / 1000).toFixed(0)}K</span>
                 </div>
                 <div className="dashboard-sidebar__panel-metric">
                     <span className="dashboard-sidebar__panel-label">Score</span>
@@ -615,7 +651,7 @@ function GenreSidebarPanel({ data }: GenreSidebarPanelProps) {
 /* ─── Chart Overlay ──────────────────────────── */
 
 interface ChartOverlayProps {
-    chart: 'potencial' | 'demografia';
+    chart: 'potencial' | 'demografia' | 'metas';
     sortedByRevenue: BusinessMetric[];
     maxRevenue: number;
     avgRevenue: number;
@@ -623,16 +659,40 @@ interface ChartOverlayProps {
     rowClass: (g: string) => string;
     vbarClass: (g: string) => string;
     onClose: () => void;
+    potencialAnalysis: { top: BusinessMetric; last: BusinessMetric; aboveAvg: number; total: number; avg: number };
+    demografiaAnalysis: { topMale: BusinessMetric; topFemale: BusinessMetric; minAge: number; maxAge: number };
+    metasAnalysis: { top: BusinessMetric; fullyAchieved: number; above80: number; total: number; lowest: BusinessMetric };
 }
 
-function ChartOverlay({ chart, sortedByRevenue, maxRevenue, avgRevenue, data, rowClass, vbarClass, onClose }: ChartOverlayProps) {
+function ChartOverlay({ chart, sortedByRevenue, maxRevenue, avgRevenue, data, rowClass, vbarClass, onClose, potencialAnalysis, demografiaAnalysis, metasAnalysis }: ChartOverlayProps) {
     return (
         <div className="chart-overlay" onClick={onClose}>
             <div className="chart-overlay__panel" onClick={(e) => e.stopPropagation()}>
                 <button className="chart-overlay__close" onClick={onClose}>✕</button>
                 <h3 className="chart-overlay__title">
-                    {chart === 'potencial' ? 'Potencial de ganancia' : 'Demografía por género'}
+                    {chart === 'potencial' ? 'Potencial de ganancia' : chart === 'demografia' ? 'Demografía por género' : 'Medidor de Metas'}
                 </h3>
+                <div className="chart-overlay__analysis">
+                    {chart === 'potencial' ? (
+                        <>
+                            <strong>{potencialAnalysis.top.genero}</strong> lidera con ${(potencialAnalysis.top.potencial_ganancia_usd / 1000).toFixed(0)}K de potencial.{' '}
+                            {potencialAnalysis.aboveAvg} de {potencialAnalysis.total} géneros superan el promedio (${(potencialAnalysis.avg / 1000).toFixed(0)}K).{' '}
+                            La brecha con {potencialAnalysis.last.genero} es de ${((potencialAnalysis.top.potencial_ganancia_usd - potencialAnalysis.last.potencial_ganancia_usd) / 1000).toFixed(0)}K.
+                        </>
+                    ) : chart === 'demografia' ? (
+                        <>
+                            Mayoría masculina: <strong>{demografiaAnalysis.topMale.genero}</strong> ({demografiaAnalysis.topMale.porcentaje_hombres.toFixed(0)}%).{' '}
+                            Mayoría femenina: <strong>{demografiaAnalysis.topFemale.genero}</strong> ({demografiaAnalysis.topFemale.porcentaje_mujeres.toFixed(0)}%).{' '}
+                            Edad promedio entre {demografiaAnalysis.minAge.toFixed(1)} y {demografiaAnalysis.maxAge.toFixed(1)} años.
+                        </>
+                    ) : (
+                        <>
+                            <strong>{metasAnalysis.top.genero}</strong> lidera con {metasAnalysis.top.cumplimiento_meta_pct.toFixed(0)}% de cumplimiento.{' '}
+                            {metasAnalysis.fullyAchieved} de {metasAnalysis.total} géneros alcanzan o superan el 100%.{' '}
+                            {metasAnalysis.above80} géneros están por encima del 80% de cumplimiento.
+                        </>
+                    )}
+                </div>
                 {chart === 'potencial' ? (
                     <>
                         <div className="dashboard-chart__bars-vertical chart-overlay__bars">
@@ -660,31 +720,56 @@ function ChartOverlay({ chart, sortedByRevenue, maxRevenue, avgRevenue, data, ro
                             <span>Prom: ${(avgRevenue / 1000).toFixed(0)}K</span>
                         </div>
                     </>
-                ) : (
-                    <div className="dashboard-chart__table chart-overlay__table">
-                        {data.map((item) => (
-                            <div key={item.genero} className={`dashboard-chart__row ${rowClass(item.genero)}`}>
-                                <span className="dashboard-chart__row-label">{item.genero}</span>
-                                <div className="dashboard-chart__row-bars">
-                                    <div className="dashboard-chart__bar-group">
-                                        <div
-                                            className="dashboard-chart__bar dashboard-chart__bar--male"
-                                            style={{ width: `${item.porcentaje_hombres}%` }}
-                                        />
-                                        <div
-                                            className="dashboard-chart__bar dashboard-chart__bar--female"
-                                            style={{ width: `${item.porcentaje_mujeres}%` }}
-                                        />
+                ) : chart === 'demografia' ? (
+                    <div className="dashboard-chart__table chart-overlay__table chart-overlay__table--grid">
+                        {data.map((item) => {
+                            const circumference = 2 * Math.PI * 29;
+                            return (
+                                <div key={item.genero} className={`dashboard-chart__doughnut-card ${rowClass(item.genero)}`}>
+                                    <div className="dashboard-chart__doughnut dashboard-chart__doughnut--card">
+                                        <svg viewBox="0 0 68 68" style={{ transform: 'rotate(-90deg)' }}>
+                                            <circle cx="34" cy="34" r="29" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="6" />
+                                            <circle cx="34" cy="34" r="29" fill="none" stroke="#5B9BD5" strokeWidth="6"
+                                                strokeDasharray={`${(item.porcentaje_hombres / 100) * circumference} ${circumference}`}
+                                                strokeDashoffset="0" />
+                                            <circle cx="34" cy="34" r="29" fill="none" stroke="#D4789C" strokeWidth="6"
+                                                strokeDasharray={`${(item.porcentaje_mujeres / 100) * circumference} ${circumference}`}
+                                                strokeDashoffset={`${-(item.porcentaje_hombres / 100) * circumference}`} />
+                                        </svg>
                                     </div>
-                                    <span className="dashboard-chart__row-value">
+                                    <span className="dashboard-chart__doughnut-card-genre">{item.genero}</span>
+                                    <span className="dashboard-chart__doughnut-card-pct">
                                         {item.porcentaje_hombres.toFixed(0)}% / {item.porcentaje_mujeres.toFixed(0)}%
                                     </span>
+                                    <span className="dashboard-chart__doughnut-card-age">
+                                        {item.edad_promedio_oyente.toFixed(1)} a
+                                    </span>
                                 </div>
-                                <span className="dashboard-chart__row-age">
-                                    {item.edad_promedio_oyente.toFixed(1)} a
-                                </span>
-                            </div>
-                        ))}
+                            );
+                        })}
+                    </div>
+                ) : (
+                    <div className="dashboard-chart__table chart-overlay__table chart-overlay__table--grid">
+                        {data.map((item) => {
+                            const pct = Math.min(item.cumplimiento_meta_pct, 100);
+                            const trend = item.tendencia_crecimiento_pct;
+                            return (
+                                <div key={item.genero} className={`dashboard-chart__doughnut-card ${rowClass(item.genero)}`} style={{ alignItems: 'center', padding: '0.75rem 0.5rem' }}>
+                                    <span className="dashboard-chart__doughnut-card-genre" style={{ marginTop: 0 }}>{item.genero}</span>
+                                    <div className="dashboard-business__goal-card-bar-track" style={{ width: '100%', height: '12px', margin: '0.35rem 0' }}>
+                                        <div className="dashboard-business__goal-card-bar-fill" style={{ width: `${pct}%` }} />
+                                    </div>
+                                    <span className="dashboard-chart__doughnut-card-pct" style={{ fontSize: '0.72rem' }}>{pct.toFixed(0)}%</span>
+                                    <div className="dashboard-business__goal-card-values" style={{ flexDirection: 'column', gap: '0.1rem', fontSize: '0.62rem' }}>
+                                        <span>${(item.meta_ingresos_usd / 1000).toFixed(0)}K meta</span>
+                                        <span>${(item.potencial_ganancia_usd / 1000).toFixed(0)}K act.</span>
+                                    </div>
+                                    <span className="dashboard-business__goal-card-trend" style={{ color: trend >= 0 ? '#22c55e' : '#ef4444', fontSize: '0.62rem' }}>
+                                        {trend >= 0 ? '↑' : '↓'} {Math.abs(trend)}%
+                                    </span>
+                                </div>
+                            );
+                        })}
                     </div>
                 )}
             </div>
