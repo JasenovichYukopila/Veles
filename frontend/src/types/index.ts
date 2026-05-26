@@ -55,4 +55,5 @@ export interface PersonalRecommendation {
     duracion_ms: number;
     es_explicito: boolean;
     imagen_album: string;
+    artista_descripcion?: string;
 }

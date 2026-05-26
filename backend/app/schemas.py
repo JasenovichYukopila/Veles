@@ -46,6 +46,7 @@ class PersonalRecommendationItem(BaseModel):
     duracion_ms: int = 0
     es_explicito: bool = False
     imagen_album: str = ''
+    artista_descripcion: str = ''
 
 class BusinessMetricsResponse(BaseModel):
     data: list[BusinessMetricItem]
