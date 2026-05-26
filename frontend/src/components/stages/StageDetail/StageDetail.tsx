@@ -137,7 +137,6 @@ export function StageDetail({ result, onReset }: StageDetailProps) {
         'Nas': '📖 Cronista urbano — La escuela del hip-hop clásico',
         'Jay-Z': '👑 Imperio del rap — Empresario y leyenda',
         'Eminem': '🌪️ Velocidad y verdad — El rap como catarsis',
-        'Drake': '🌊 Emo-rap — El artista más streameable del mundo',
         'Cardi B': '💅 Poder femenino — La reina del rap actual',
       },
       'Electrónica': {
