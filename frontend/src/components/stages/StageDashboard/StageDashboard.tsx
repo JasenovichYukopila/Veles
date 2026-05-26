@@ -196,6 +196,7 @@ function BusinessView({ genre, onBack }: BusinessViewProps) {
     useEffect(() => {
         const root = document.documentElement;
         const targetGenre = selectedGenre ?? genre;
+
         if (targetGenre && targetGenre in GENRE_INFO) {
             const info = GENRE_INFO[targetGenre as Genre];
             root.style.setProperty('--genre-color', info.color);
@@ -204,6 +205,20 @@ function BusinessView({ genre, onBack }: BusinessViewProps) {
             root.style.setProperty('--genre-color', '#7C3AED');
             root.style.setProperty('--genre-color-rgb', '124, 58, 237');
         }
+
+        return () => {
+            if (genre && genre in GENRE_INFO) {
+                // Si el usuario ya había clasificado una canción antes de entrar al dashboard,
+                // restauramos ese color específico.
+                const info = GENRE_INFO[genre as Genre];
+                root.style.setProperty('--genre-color', info.color);
+                root.style.setProperty('--genre-color-rgb', hexToRgb(info.color));
+            } else {
+                // Si no, restauramos el morado base "Veles" de la aplicación.
+                root.style.setProperty('--genre-color', '#7C3AED');
+                root.style.setProperty('--genre-color-rgb', '124, 58, 237');
+            }
+        };
     }, [selectedGenre, genre]);
 
     if (loading) return <DashboardLoading />;

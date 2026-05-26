@@ -35,6 +35,9 @@ export default function App() {
   });
 
   useEffect(() => {
+    // Si estamos en el dashboard, dejamos que él mismo controle sus colores
+    if (stage === 'dashboard') return;
+
     const root = document.documentElement;
     if (result) {
       const info = GENRE_INFO[result.genre];
@@ -44,7 +47,7 @@ export default function App() {
       root.style.setProperty('--genre-color', '#7C3AED');
       root.style.setProperty('--genre-color-rgb', '124, 58, 237');
     }
-  }, [result]);
+  }, [result, stage]);
 
   const handleStart = () => {
     startRecording();
