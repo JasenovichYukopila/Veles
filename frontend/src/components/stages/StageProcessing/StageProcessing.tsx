@@ -64,7 +64,7 @@ export function StageProcessing({ audioBlob, analysisReady, error, onContinue, o
             </div>
           ) : analysisReady ? (
             <div className="stage-processing__check">
-              <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+              <svg width="72" height="72" viewBox="0 0 36 36" fill="none">
                 <circle cx="18" cy="18" r="17" stroke="currentColor" strokeWidth="1.5" />
                 <path
                   d="M11 18.5l5 5 9-10"

@@ -54,7 +54,7 @@ export default function App() {
     setResult(null);
     setAudioBlob(null);
     setClassifyError(false);
-    setStage('menu');
+    setStage('idle');
   };
 
   const showProgressBar = stage !== 'landing' && stage !== 'menu' && stage !== 'dashboard';
@@ -104,7 +104,7 @@ export default function App() {
         return (
           <StageDashboard
             genre={result?.genre}
-            onReset={handleReset}
+            onReset={() => setStage('menu')}
           />
         );
     }

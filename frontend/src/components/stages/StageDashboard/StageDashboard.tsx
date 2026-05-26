@@ -176,6 +176,7 @@ function BusinessView({ genre, onBack }: BusinessViewProps) {
     const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
     const [sortKey, setSortKey] = useState<SortKey>('potencial_ganancia_usd');
     const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+    const [expandedChart, setExpandedChart] = useState<'potencial' | 'demografia' | null>(null);
 
     useEffect(() => {
         let cancelled = false;
@@ -251,6 +252,7 @@ function BusinessView({ genre, onBack }: BusinessViewProps) {
         : sortedData;
 
         return (
+            <>
             <div className="dashboard-view dashboard-view--business">
                 <div className="dashboard-business__layout">
                     <div className="dashboard-view__header">
@@ -277,7 +279,7 @@ function BusinessView({ genre, onBack }: BusinessViewProps) {
                     <div className="dashboard-business__main">
                         {/* ── Potencial + Demografía ── */}
                         <div className="dashboard-business__charts">
-                            <div className="dashboard-business__chart">
+                            <div className="dashboard-business__chart dashboard-business__chart--clickable" onClick={() => setExpandedChart('potencial')}>
                                 <h3 className="dashboard-chart__title">Potencial de ganancia</h3>
                                 <div className="dashboard-chart__bars-vertical">
                                     {sortedByRevenue.map((item) => (
@@ -305,7 +307,7 @@ function BusinessView({ genre, onBack }: BusinessViewProps) {
                                 </div>
                             </div>
 
-                            <div className="dashboard-business__chart">
+                            <div className="dashboard-business__chart dashboard-business__chart--clickable" onClick={() => setExpandedChart('demografia')}>
                                 <h3 className="dashboard-chart__title">Demografía por género</h3>
                                 <div className="dashboard-chart__table">
                                     {data.map((item) => (
@@ -424,6 +426,19 @@ function BusinessView({ genre, onBack }: BusinessViewProps) {
                 </div>
             </div>
         </div>
+        {expandedChart && (
+            <ChartOverlay
+                chart={expandedChart}
+                sortedByRevenue={sortedByRevenue}
+                maxRevenue={maxRevenue}
+                avgRevenue={avgRevenue}
+                data={data}
+                rowClass={rowClass}
+                vbarClass={vbarClass}
+                onClose={() => setExpandedChart(null)}
+            />
+        )}
+            </>
     );
 }
 
@@ -592,6 +607,86 @@ function GenreSidebarPanel({ data }: GenreSidebarPanelProps) {
                     className="dashboard-sidebar__panel-bar-fill"
                     style={{ width: `${pct}%` }}
                 />
+            </div>
+        </div>
+    );
+}
+
+/* ─── Chart Overlay ──────────────────────────── */
+
+interface ChartOverlayProps {
+    chart: 'potencial' | 'demografia';
+    sortedByRevenue: BusinessMetric[];
+    maxRevenue: number;
+    avgRevenue: number;
+    data: BusinessMetric[];
+    rowClass: (g: string) => string;
+    vbarClass: (g: string) => string;
+    onClose: () => void;
+}
+
+function ChartOverlay({ chart, sortedByRevenue, maxRevenue, avgRevenue, data, rowClass, vbarClass, onClose }: ChartOverlayProps) {
+    return (
+        <div className="chart-overlay" onClick={onClose}>
+            <div className="chart-overlay__panel" onClick={(e) => e.stopPropagation()}>
+                <button className="chart-overlay__close" onClick={onClose}>✕</button>
+                <h3 className="chart-overlay__title">
+                    {chart === 'potencial' ? 'Potencial de ganancia' : 'Demografía por género'}
+                </h3>
+                {chart === 'potencial' ? (
+                    <>
+                        <div className="dashboard-chart__bars-vertical chart-overlay__bars">
+                            {sortedByRevenue.map((item) => (
+                                <div key={item.genero} className={`dashboard-chart__vbar-group ${vbarClass(item.genero)}`}>
+                                    <div className="dashboard-chart__vbar-label">{item.genero}</div>
+                                    <div className="dashboard-chart__vbar-track">
+                                        <div
+                                            className="dashboard-chart__vbar-fill"
+                                            style={{ height: `${(item.potencial_ganancia_usd / maxRevenue) * 100}%` }}
+                                        />
+                                        <div
+                                            className="dashboard-chart__vbar-avg-line"
+                                            style={{ bottom: `${(avgRevenue / maxRevenue) * 100}%` }}
+                                        />
+                                    </div>
+                                    <span className="dashboard-chart__vbar-value">
+                                        ${(item.potencial_ganancia_usd / 1000).toFixed(0)}K
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="dashboard-chart__avg-legend">
+                            <span className="dashboard-chart__avg-line-sample" />
+                            <span>Prom: ${(avgRevenue / 1000).toFixed(0)}K</span>
+                        </div>
+                    </>
+                ) : (
+                    <div className="dashboard-chart__table chart-overlay__table">
+                        {data.map((item) => (
+                            <div key={item.genero} className={`dashboard-chart__row ${rowClass(item.genero)}`}>
+                                <span className="dashboard-chart__row-label">{item.genero}</span>
+                                <div className="dashboard-chart__row-bars">
+                                    <div className="dashboard-chart__bar-group">
+                                        <div
+                                            className="dashboard-chart__bar dashboard-chart__bar--male"
+                                            style={{ width: `${item.porcentaje_hombres}%` }}
+                                        />
+                                        <div
+                                            className="dashboard-chart__bar dashboard-chart__bar--female"
+                                            style={{ width: `${item.porcentaje_mujeres}%` }}
+                                        />
+                                    </div>
+                                    <span className="dashboard-chart__row-value">
+                                        {item.porcentaje_hombres.toFixed(0)}% / {item.porcentaje_mujeres.toFixed(0)}%
+                                    </span>
+                                </div>
+                                <span className="dashboard-chart__row-age">
+                                    {item.edad_promedio_oyente.toFixed(1)} a
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );
