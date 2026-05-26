@@ -1,73 +1,82 @@
-# React + TypeScript + Vite
+# Veles — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicación web de Veles construida con React, TypeScript y Vite. Ofrece dos modos de uso:
 
-Currently, two official plugins are available:
+1. **Clasificación acústica en tiempo real**: Grabación de audio, inferencia de género musical, y recomendaciones personalizadas de Spotify.
+2. **Dashboard empresarial**: KPIs de mercado, gráficos interactivos (barras, doughnuts, metas), overlays con análisis estadístico, y filtros por género.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Scripts
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install          # Instalar dependencias
+npm run dev          # Servidor de desarrollo → http://localhost:5173
+npm run build        # Build de producción
+npm run preview      # Previsualizar build de producción
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Arquitectura
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+La aplicación usa un sistema de **stages** (estados) controlado por `App.tsx`. No hay router tradicional — cada stage es un componente React que se monta/desmonta según el estado actual.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
 ```
+src/
+├── App.tsx                  # Estado global: Stage actual + callbacks
+├── types/index.ts           # Genre (7), Stage (8), BusinessMetric, etc.
+├── constants/index.ts       # GENRE_INFO, RECORDING_DURATION_MS, API_BASE_URL
+├── services/
+│   ├── classifier.ts        # POST /classify → { genre, confidence }
+│   └── dashboard.ts          # GET /dashboard/business, GET /dashboard/personal
+├── hooks/
+│   └── useAudioRecorder.ts  # MediaRecorder → Blob → POST /classify
+└── components/
+    ├── ProgressBar/              # Barra de progreso (5 etapas)
+    ├── shared/
+    │   └── WaveformVisualizer.tsx   # Canvas + Web Audio API
+    └── stages/
+        ├── StageLanding/         # Pantalla de bienvenida
+        ├── StageMenu/            # Menú: Clasificación vs Dashboard
+        ├── StageIdle/            # Listo para grabar
+        ├── StageRecording/       # Grabación con waveform animado
+        ├── StageProcessing/      # Análisis en progreso (barras animadas)
+        ├── StageResult/          # Resultado: género + confianza + acciones
+        ├── StageDetail/          # Recomendaciones Spotify expandibles
+        └── StageDashboard/       # Dashboard empresarial
+            ├── StageDashboard.tsx
+            ├── DashboardMenu.tsx
+            ├── BusinessView.tsx  # KPIs, gráficos, tabla, sidebar
+            ├── DashboardSidebar.tsx
+            ├── GenreSidebarPanel.tsx
+            ├── DashboardInsights.tsx
+            ├── ChartOverlay.tsx   # Modal de zoom con análisis
+            └── StageDashboard.css # 1700+ líneas de CSS
+```
+
+## Endpoints consumidos
+
+El frontend conecta con `http://localhost:8000`:
+
+| Endpoint | Descripción |
+|----------|-------------|
+| `POST /classify` | Cuerpo: `multipart/form-data` con `file` (audio/*). Respuesta: `{ genre, confidence }` |
+| `GET /dashboard/business` | Sin parámetros. Respuesta: `{ data: BusinessMetric[] }` |
+| `GET /dashboard/personal?genre=X` | Query param `genre`. Respuesta: `{ data: PersonalRecommendation[] }` |
+
+## Dashboard Empresarial
+
+El `StageDashboard` (`BusinessView`) incluye:
+
+- **Gráfico de barras** — Potencial de ganancia por género con línea de promedio
+- **Gráfico de doughnuts** — Distribución H/M por género en grid de tarjetas SVG
+- **Tarjetas de metas** — Progreso hacia meta, meta vs actual, tendencia
+- **Tabla resumen** — 9 columnas ordenables
+- **Zoom con análisis** — Al hacer clic en cualquier gráfico: overlay con análisis estadístico
+- **Sidebar de filtro** — 15 KPIs detallados por género seleccionado
+- **Insights estratégicos** — Texto narrativo por género
+
+El zoom filtra datos cuando hay un género seleccionado (filtrado de overlayData, overlaySortedByRevenue, etc.).
+
+## Notas
+
+- `--genre-color` y `--genre-color-rgb` son CSS custom properties que cambian según el género detectado/clasificado.
+- El dashboard no requiere clasificación previa — es accesible desde el menú principal directamente.
+- El Recording usa `getUserMedia` y graba exactamente 15 segundos (`RECORDING_DURATION_MS = 15000`).

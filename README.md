@@ -1,6 +1,6 @@
 # Veles
 
-Motor de clasificación de géneros musicales basado en **ingeniería de características acústicas** (librosa) y **datos comerciales de Spotify** (spotipy). Combina un pipeline de audio DSP con aprendizaje automático para predecir géneros musicales y analizar su rendimiento comercial.
+Motor de clasificación de géneros musicales basado en **ingeniería de características acústicas** (librosa) y **datos comerciales de Spotify** (spotipy). Combina un pipeline de audio DSP con aprendizaje automático para predecir géneros musicales, analizar su rendimiento comercial y visualizar KPIs de mercado mediante un dashboard interactivo.
 
 ---
 
@@ -41,6 +41,27 @@ Veles/
 │
 ├── frontend/                     # App React + Vite
 │   └── src/
+│       ├── App.tsx              # Router de stages (8 vistas)
+│       ├── types/index.ts       # Tipos compartidos
+│       ├── constants/index.ts   # CONFIG + GENRE_INFO
+│       ├── services/
+│       │   ├── classifier.ts    # POST /classify
+│       │   └── dashboard.ts     # GET /dashboard/*
+│       ├── hooks/
+│       │   └── useAudioRecorder.ts
+│       └── components/
+│           ├── ProgressBar/
+│           ├── shared/
+│           │   └── WaveformVisualizer.tsx
+│           └── stages/
+│               ├── StageLanding/     # Pantalla de bienvenida
+│               ├── StageMenu/        # Menú: Clasificación vs Dashboard
+│               ├── StageIdle/        # Listo para grabar
+│               ├── StageRecording/   # Grabación con waveform
+│               ├── StageProcessing/  # Análisis en progreso
+│               ├── StageResult/      # Resultado de clasificación
+│               ├── StageDetail/      # Recomendaciones Spotify
+│               └── StageDashboard/   # Dashboard empresarial
 │
 └── reports/                      # Reportes y visualizaciones
     └── figures/
@@ -198,11 +219,33 @@ El notebook carga las credenciales automáticamente con `python-dotenv`. **No se
 
 ## Aplicación Web — Veles
 
-Interfaz interactiva para demostración del modelo en tiempo real. Permite grabar audio desde el micrófono y obtener la clasificación del género musical al instante.
+Interfaz interactiva con **dos modos de uso**: clasificación de audio en tiempo real y dashboard empresarial de métricas de mercado.
+
+### Modo 1: Clasificación Acústica
+
+Graba 15 segundos de audio desde el micrófono y el modelo predice el género musical, mostrando además recomendaciones de canciones en Spotify.
+
+Flujo: `Idle → Recording → Processing → Result → Detail`
+
+### Modo 2: Dashboard Empresarial
+
+Panel de KPIs de mercado y comportamiento comercial por género musical. Incluye:
+
+- **Sidebar de género** con 15 métricas detalladas (potencial, meta, cumplimiento, tendencia, ROI, inversión recomendada, score, riesgo, edad, H/M, artistas, canciones, duración, explícito)
+- **Gráficos interactivos** (barras de potencial, doughnuts de demografía, tarjetas de metas)
+- **Zoom con análisis** para cada gráfico: análisis estadístico al hacer clic
+- **Filtro por género** que filtra todos los datos y overlays
+- **Insights estratégicos** personalizados por género
+
+### Endpoints del backend
+
+| Endpoint | Descripción |
+|----------|-------------|
+| `POST /classify` | Clasifica audio: entrada `audio/*`, salida `{ genre, confidence }` |
+| `GET /dashboard/business` | KPIs empresariales por género (7 géneros, 20+ columnas) |
+| `GET /dashboard/personal?genre=X` | Recomendaciones B2C filtradas por género |
 
 ### Correr el backend
-
-El backend usa FastAPI + Uvicorn. Se gestiona con `uv` de forma independiente al entorno de notebooks.
 
 ```bash
 cd backend
@@ -211,10 +254,7 @@ cd backend
 uv venv
 uv pip install -r requirements.txt
 
-# Iniciar el servidor (Mac/Linux)
-uv run uvicorn app.main:app --reload
-
-# Iniciar el servidor (Windows)
+# Iniciar el servidor
 uv run uvicorn app.main:app --reload
 ```
 
