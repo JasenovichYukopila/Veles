@@ -6,9 +6,9 @@
     height: 100vh;
     overflow: hidden;
     padding: 4rem 2rem 2rem;
-  }
-  
-  .stage-detail__content {
+}
+
+.stage-detail__content {
     display: flex;
     flex-direction: column;
     gap: 1rem;
@@ -16,240 +16,459 @@
     flex: 1;
     min-height: 0;
     animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
-  }
-  
-  @keyframes fadeIn {
+}
+
+@keyframes fadeIn {
     from { opacity: 0; transform: translateY(16px); }
     to   { opacity: 1; transform: translateY(0);    }
-  }
-  
-  .stage-detail__header {
+}
+
+.stage-detail__header {
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
-  }
-  
-  .stage-detail__genre-tag {
+}
+
+.stage-detail__genre-tag {
     font-size: 0.7rem;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--genre-color);
-  }
-  
-  .stage-detail__title {
+}
+
+.stage-detail__title {
     font-size: 2rem;
     font-weight: 700;
     letter-spacing: -0.03em;
     color: var(--color-text-primary);
-  }
-  
-  .stage-detail__reset {
+}
+
+.stage-detail__reset {
     align-self: flex-start;
     font-size: 0.8rem;
     color: var(--color-text-muted);
     letter-spacing: 0.04em;
     transition: color var(--transition-fast);
     padding: 0.5rem 0;
-  }
+    flex-shrink: 0;
+}
 
-  .stage-detail__reset:hover {
+.stage-detail__reset:hover {
     color: var(--color-text-secondary);
-  }
+}
 
-  /* ─── Spotify section ─────────────────────────── */
+/* ─── Storytelling Intro ────────────────────────────── */
 
-  .stage-detail__spotify-section {
+.stage-detail__intro {
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-md);
+    background: linear-gradient(90deg, rgba(var(--genre-color-rgb), 0.1) 0%, rgba(255,255,255,0.02) 100%);
+    border: 1px solid rgba(var(--genre-color-rgb), 0.2);
+    flex-shrink: 0;
+}
+
+.stage-detail__intro-text {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 1.6;
+    margin: 0 0 0.35rem;
+}
+
+.stage-detail__intro-sub {
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.5);
+    line-height: 1.5;
+    margin: 0;
+    font-style: italic;
+}
+
+/* ─── Spotify section ─────────────────────────── */
+
+.stage-detail__spotify-section {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 1.25rem;
     flex: 1;
     min-height: 0;
-    overflow: hidden;
-  }
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+    padding-right: 0.5rem;
+}
 
-  .stage-detail__spotify-title {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--color-text-primary);
-    letter-spacing: 0.02em;
-    margin-top: 0.25rem;
-  }
+.stage-detail__spotify-section::-webkit-scrollbar { width: 4px; }
+.stage-detail__spotify-section::-webkit-scrollbar-track { background: transparent; }
+.stage-detail__spotify-section::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-full);
+}
 
-  .stage-detail__spotify-loading,
-  .stage-detail__spotify-error,
-  .stage-detail__spotify-empty {
+.stage-detail__spotify-loading,
+.stage-detail__spotify-error,
+.stage-detail__spotify-empty {
     font-size: 0.82rem;
     color: var(--color-text-secondary);
     padding: 1rem 0;
     text-align: center;
-  }
+}
 
-  .stage-detail__spotify-error {
+.stage-detail__spotify-error {
     color: #ef4444;
-  }
+}
 
-  /* ─── Artists strip ───────────────────────────── */
+/* ─── Group headers with narrative ────────────── */
 
-  .stage-detail__spotify-artists {
+.stage-detail__group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.stage-detail__group-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.stage-detail__group-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    letter-spacing: 0.02em;
+}
+
+.stage-detail__group-narrative {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* ─── Artists strip ───────────────────────────── */
+
+.stage-detail__spotify-artists {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: 0.5rem;
-    flex-shrink: 0;
-  }
+}
 
-  .stage-detail__spotify-artist {
+.stage-detail__artist-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.stage-detail__spotify-artist {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 0.6rem 1rem 0.6rem 0.6rem;
+    padding: 0.7rem 0.8rem;
     border-radius: var(--radius-md);
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.09);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     cursor: pointer;
     transition: border-color var(--transition-fast),
                 background var(--transition-fast);
-  }
+}
 
-  .stage-detail__spotify-artist:hover {
-    background: rgba(255, 255, 255, 0.09);
-    border-color: rgba(var(--genre-color-rgb), 0.4);
-  }
+.stage-detail__spotify-artist:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(var(--genre-color-rgb), 0.3);
+}
 
-  .stage-detail__spotify-artist-img {
-    width: 34px;
-    height: 34px;
+.stage-detail__spotify-artist--active {
+    background: rgba(var(--genre-color-rgb), 0.08);
+    border-color: rgba(var(--genre-color-rgb), 0.35);
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+
+.stage-detail__spotify-artist-img {
+    width: 42px;
+    height: 42px;
     border-radius: var(--radius-full);
     overflow: hidden;
     flex-shrink: 0;
     background: rgba(255, 255, 255, 0.08);
-  }
+}
 
-  .stage-detail__spotify-artist-img img {
+.stage-detail__spotify-artist-img img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-  }
+}
 
-  .stage-detail__spotify-artist-placeholder {
+.stage-detail__spotify-artist-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+}
+
+.stage-detail__spotify-artist-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.stage-detail__spotify-artist-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.stage-detail__spotify-artist-category {
+    font-size: 0.68rem;
+    color: rgba(255, 255, 255, 0.45);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.stage-detail__spotify-artist-chevron {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.3);
+    flex-shrink: 0;
+    transition: color var(--transition-fast);
+    align-self: flex-start;
+    margin-top: 0.15rem;
+}
+
+/* ─── Artist storytelling narrative ──────────── */
+
+.stage-detail__spotify-artist-story {
+    display: block;
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.55);
+    line-height: 1.65;
+    margin-top: 0.45rem;
+    padding-left: 0.6rem;
+    border-left: 2px solid rgba(var(--genre-color-rgb), 0.4);
+    font-style: italic;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+    animation: storyFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes storyFadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0);    }
+}
+
+.stage-detail__spotify-artist:hover .stage-detail__spotify-artist-chevron {
+    color: var(--genre-color);
+}
+
+/* ─── Artist detail panel ─────────────────────── */
+
+.stage-detail__artist-panel {
+    position: relative;
+    padding: 1.25rem;
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, rgba(var(--genre-color-rgb), 0.1) 0%, rgba(255,255,255,0.03) 100%);
+    border: 1px solid rgba(var(--genre-color-rgb), 0.25);
+    flex-shrink: 0;
+    animation: panelSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes panelSlideIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0);    }
+}
+
+.stage-detail__artist-panel-close {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.8rem;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.4);
+    transition: color var(--transition-fast);
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-full);
+}
+
+.stage-detail__artist-panel-close:hover {
+    color: var(--color-text-primary);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.stage-detail__artist-panel-body {
+    display: flex;
+    gap: 1.25rem;
+    align-items: flex-start;
+}
+
+.stage-detail__artist-panel-img {
+    width: 90px;
+    height: 90px;
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.06);
+    border: 2px solid rgba(var(--genre-color-rgb), 0.3);
+}
+
+.stage-detail__artist-panel-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.stage-detail__artist-panel-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--genre-color);
+}
+
+.stage-detail__artist-panel-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.stage-detail__artist-panel-name {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+}
+
+.stage-detail__artist-panel-tag {
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--genre-color);
+    font-weight: 500;
+}
+
+.stage-detail__artist-panel-desc {
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.6;
+    margin: 0.2rem 0 0.4rem;
+}
+
+.stage-detail__artist-panel-spotify {
+    align-self: flex-start;
+    padding: 0.6rem 1.25rem;
+    border-radius: var(--radius-full);
+    background: var(--genre-color);
+    color: #0A0A0F;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    transition: transform var(--transition-fast),
+                box-shadow var(--transition-fast);
+}
+
+.stage-detail__artist-panel-spotify:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(var(--genre-color-rgb), 0.4);
+}
+
+/* ─── Artist songs (collapsible) ──────────────── */
+
+.stage-detail__artist-songs {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.4rem 0.6rem 0.5rem 3.5rem;
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
+    background: rgba(var(--genre-color-rgb), 0.03);
+    border: 1px solid rgba(var(--genre-color-rgb), 0.12);
+    border-top: none;
+    animation: songsSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes songsSlideIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0);    }
+}
+
+.stage-detail__spotify-song {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.4rem 0.5rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.stage-detail__spotify-song:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.stage-detail__spotify-song-img-sm {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.stage-detail__spotify-song-img-sm img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.stage-detail__spotify-song-placeholder-sm {
     width: 100%;
     height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 0.9rem;
-    font-weight: 600;
     color: var(--color-text-secondary);
-  }
+}
 
-  .stage-detail__spotify-artist-info {
+.stage-detail__spotify-song-info-sm {
     display: flex;
     flex-direction: column;
-    gap: 0.05rem;
-  }
+    gap: 0.08rem;
+    flex: 1;
+    min-width: 0;
+}
 
-  .stage-detail__spotify-artist-name {
-    font-size: 0.875rem;
-    font-weight: 600;
+.stage-detail__spotify-song-title-sm {
+    font-size: 0.8rem;
+    font-weight: 500;
     color: var(--color-text-primary);
     white-space: nowrap;
-  }
-
-  .stage-detail__spotify-artist-songs {
-    font-size: 0.72rem;
-    color: var(--color-text-secondary);
-    font-family: var(--font-mono);
-    white-space: nowrap;
-  }
-
-  /* ─── Songs grid ──────────────────────────────── */
-
-  .stage-detail__spotify-songs {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    grid-auto-rows: 1fr;
-    gap: 0.75rem;
-    flex: 1 1 0;
-    min-height: 0;
-    overflow: hidden;
-  }
-
-  .stage-detail__spotify-song {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-    cursor: pointer;
-    min-height: 0;
-    transition: transform var(--transition-fast),
-                border-color var(--transition-fast);
-    padding: 0.5rem;
-    border-radius: var(--radius-md);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    background: rgba(255, 255, 255, 0.03);
-  }
-
-  .stage-detail__spotify-song:hover {
-    transform: translateY(-4px);
-    border-color: rgba(var(--genre-color-rgb), 0.3);
-    background: rgba(255, 255, 255, 0.06);
-  }
-
-  .stage-detail__spotify-song-img {
-    flex: 1 1 0;
-    min-height: 0;
-    border-radius: var(--radius-md);
-    overflow: hidden;
-    background: rgba(255, 255, 255, 0.06);
-  }
-
-  .stage-detail__spotify-song-img img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .stage-detail__spotify-song-placeholder {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.8rem;
-    color: var(--color-text-secondary);
-  }
-
-  .stage-detail__spotify-song-info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
-    flex-shrink: 0;
-  }
-
-  .stage-detail__spotify-song-title {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--color-text-primary);
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
-  }
+}
 
-  .stage-detail__spotify-song-artist {
-    font-size: 0.78rem;
-    color: var(--color-text-secondary);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .stage-detail__spotify-song-pop {
-    font-size: 0.72rem;
-    color: var(--genre-color, var(--color-accent));
+.stage-detail__spotify-song-pop-sm {
+    font-size: 0.68rem;
+    color: var(--genre-color);
     font-family: var(--font-mono);
-  }
+}
 
-  /* ─── Explicit tag ───────────────────────────── */
+/* ─── Explicit tag ───────────────────────────── */
 
-  .stage-detail__explicit-tag {
+.stage-detail__explicit-tag {
     font-size: 0.65rem;
     background: rgba(245, 158, 11, 0.15);
     color: #f59e0b;
@@ -258,4 +477,4 @@
     margin-left: 4px;
     font-weight: 700;
     vertical-align: middle;
-  }
+}

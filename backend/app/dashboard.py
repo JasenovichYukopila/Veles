@@ -110,9 +110,24 @@ def get_personal_recommendations(genre: str) -> list[dict[str, Any]]:
             'duracion_ms': _int_or(row.get('duracion_ms'), 0),
             'es_explicito': row.get('es_explicito', 'False').strip().lower() == 'true',
             'imagen_album': row.get('imagen_album', ''),
+            'artista_descripcion': _get_artist_description(row.get('artista_nombre', ''), genre),
         }
         result.append(entry)
     return result
+
+
+def _get_artist_description(artist_name: str, genre: str) -> str:
+    desc_map = {
+        'Yeison Jimenez': 'Una de las voces más representativas del vallenato moderno. Con un estilo que fusiona la tradición con arreglos contemporáneos, Jimenez ha conquistado nuevas generaciones de oyentes.',
+        'Kaleth Morales': 'Conocido como el "Rey de la Nueva Ola del Vallenato", Kaleth Morales revolucionó el género fusionando ritmos tradicionales con pop, atrayendo a un público joven masivo.',
+        'Diomedes Diaz': 'El "Cacique de La Junta" es una leyenda indiscutible del vallenato. Su obra ha definido el sonido clásico del género y su legado perdura en cada acorde.',
+        'Silvestre Dangond': 'Figura central del vallenato contemporáneo, Dangond ha llevado el género a audiencias globales con su carisma escénico y su habilidad para fusionar ritmos caribeños con pop.',
+        'Los inquietos del vallenato': 'Agrupación emblemática que ha mantenido viva la esencia del vallenato romántico durante décadas, combinando letras profundas con melodías inolvidables.',
+        'Binomio de Oro de América': 'Institución musical del vallenato con una trayectoria legendaria. Sus interpretaciones han marcado generaciones enteras con su estilo inconfundible.',
+        'Los Gigantes Del Vallenato': 'Representantes del vallenato de exportación, esta agrupación ha sabido mantener la autenticidad del género mientras conquista nuevos horizontes musicales.',
+    }
+    generic = f'{artist_name} es un artista destacado del género {genre}, reconocido por su contribución única al panorama musical.'
+    return desc_map.get(artist_name, generic)
 
 
 def _float_or(val: str | None, default: float | None) -> float | None:
