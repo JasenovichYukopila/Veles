@@ -16,7 +16,10 @@ from app.schemas import (
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    warmup()
+    try:
+        warmup()
+    except Exception as e:
+        print(f"Warmup falló (dashboard funciona sin modelo): {e}")
     yield
 
 app = FastAPI(
@@ -27,7 +30,11 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=['http://localhost:5173', 'http://localhost:5174'],
+    allow_origins=[
+        'http://localhost:5173',
+        'http://localhost:5174',
+        'https://frontend-liard-phi-13.vercel.app',
+    ],
     allow_methods=['POST', 'GET'],
     allow_headers=['*'],
 )
