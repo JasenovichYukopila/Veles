@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 import traceback
+import os
 from fastapi import FastAPI, UploadFile, File, HTTPException, Query
 from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
@@ -13,6 +14,8 @@ from app.schemas import (
     PersonalRecommendationsResponse,
     PersonalRecommendationItem,
 )
+
+CLASSIFIER_URL = os.getenv("CLASSIFIER_URL", "")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -47,6 +50,12 @@ async def classify_audio(file: UploadFile = File(...)) -> ClassificationResponse
             detail="El archivo debe ser de tipo audio.",
         )
 
+    if CLASSIFIER_URL:
+        import requests
+        files = {"file": (file.filename, await file.read(), file.content_type)}
+        resp = requests.post(f"{CLASSIFIER_URL}/classify", files=files, timeout=60)
+        return resp.json()
+
     audio_bytes = await file.read()
 
     try:
@@ -56,7 +65,7 @@ async def classify_audio(file: UploadFile = File(...)) -> ClassificationResponse
         traceback.print_exc()
         print("======================================")
         raise HTTPException(
-            status_code=500, 
+            status_code=500,
             detail="Error interno del servidor. Revisa la consola de Uvicorn."
         )
 
