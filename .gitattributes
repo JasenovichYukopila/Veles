@@ -1,0 +1,9 @@
+reports/** linguist-generated=true
+notebooks/** linguist-generated=true
+data/** linguist-generated=true
+.opencode/** linguist-generated=true
+.venv/** linguist-generated=true
+.cache/** linguist-generated=true
+backend/** linguist-generated=true
+frontend/** linguist-generated=true
+*.pyc linguist-generated=true
