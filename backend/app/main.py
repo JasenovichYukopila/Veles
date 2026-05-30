@@ -1,10 +1,9 @@
 from contextlib import asynccontextmanager
 import traceback
-import threading
 from fastapi import FastAPI, UploadFile, File, HTTPException, Query
 from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
-from app.classifier import classify, warmup
+from app.classifier import classify
 from app.dashboard import get_business_metrics, get_personal_recommendations
 from app.schemas import (
     ClassificationResponse,
@@ -15,20 +14,8 @@ from app.schemas import (
     PersonalRecommendationItem,
 )
 
-_model_loaded = False
-
-def _warmup_background():
-    global _model_loaded
-    try:
-        warmup()
-        _model_loaded = True
-        print("Modelo listo.")
-    except Exception as e:
-        print(f"Modelo no disponible (dashboard funciona): {e}")
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    threading.Thread(target=_warmup_background, daemon=True).start()
     yield
 
 app = FastAPI(
