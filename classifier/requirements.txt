@@ -1,0 +1,16 @@
+librosa
+scikit-learn
+xgboost
+lightgbm
+huggingface_hub
+python-dotenv
+fastapi
+uvicorn
+python-multipart
+numpy
+joblib
+soundfile
+soxr
+audioread
+numba
+llvmlite
