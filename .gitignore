@@ -33,3 +33,10 @@ models/
 
 *.log
 *.pid
+.vercel
+
+# AI agent instructions
+AGENTS.md
+
+# Presentation files
+presentacion/

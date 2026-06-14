@@ -2,7 +2,7 @@ import csv
 import os
 from typing import Any
 
-DATA_DIR = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'spotify')
+DATA_DIR = os.path.join(os.path.dirname(__file__), '..', 'data', 'spotify')
 
 BUSINESS_FILE = os.path.join(DATA_DIR, 'spotify_business_metrics.csv')
 PERSONAL_FILE  = os.path.join(DATA_DIR, 'spotify_b2c_recommendations.csv')
